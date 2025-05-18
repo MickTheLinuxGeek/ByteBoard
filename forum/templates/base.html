@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Forum{% endblock %}</title>
+</head>
+<body>
+
+<header>
+    <h1><a href="{% url 'forum:forum_index' %}">My Simple Forum</a></h1>
+    <hr>
+</header>
+
+<main>
+    {% block content %}
+    {% endblock %}
+</main>
+
+<footer>
+    <hr>
+    <p>&copy; {% now "Y" %} My Forum Project</p>
+</footer>
+
+</body>
+</html>

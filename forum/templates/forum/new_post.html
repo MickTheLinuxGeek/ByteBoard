@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Post Reply in {{ topic.subject }}{% endblock %}
+
+{% block content %}
+<h2>Post Reply</h2>
+<h3>Topic: {{ topic.subject }}</h3> {# Show which topic we're replying to #}
+
+{# This form will be replaced by a Django Form later #}
+<form method="post" action=""> {# Post to the current URL #}
+    {% csrf_token %} {# Essential CSRF protection #}
+
+    <p>
+        <label for="id_message">Your Reply:</label><br>
+        <textarea name="message" id="id_message" rows="5" required></textarea>
+    </p>
+    <button type="submit">Post Reply</button>
+</form>
+
+<p><a href="{% url 'forum:topic_detail' topic.id %}">Cancel and return to topic</a></p>
+
+{% endblock %}

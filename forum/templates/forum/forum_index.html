@@ -1,0 +1,32 @@
+{% extends 'base.html' %} {# Inherit structure from base.html #}
+
+{% block title %}Forum Topics{% endblock %} {# Override the title block #}
+
+{% block content %} {# Override the content block #}
+<h2>Forum Topics</h2>
+
+<p>
+    <a href="{% url 'forum:new_topic' %}">Start a New Topic</a>
+    {# We'll want to hide this link if the user isn't logged in, later #}
+</p>
+
+{% if topics %}
+<ul>
+    {% for topic in topics %}
+    <li>
+        <a href="{% url 'forum:topic_detail' topic.id %}">
+            {{ topic.subject }}
+        </a>
+        <small>
+            by {{ topic.created_by.username }}
+            on {{ topic.created_at|date:"M d, Y H:i" }}
+            ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }}) {# Show post count #}
+        </small>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>No topics have been created yet.</p>
+{% endif %}
+
+{% endblock %}

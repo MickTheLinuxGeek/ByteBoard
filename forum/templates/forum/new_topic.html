@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Start New Topic{% endblock %}
+
+{% block content %}
+<h2>Start a New Topic</h2>
+
+{# This form will be replaced by a Django Form later #}
+<form method="post" action=""> {# Post to the current URL #}
+    {% csrf_token %} {# IMPORTANT: Cross-Site Request Forgery protection #}
+
+    <p>
+        <label for="id_subject">Subject:</label><br>
+        <input type="text" name="subject" id="id_subject" required maxlength="255">
+    </p>
+    <p>
+        <label for="id_message">Message:</label><br>
+        <textarea name="message" id="id_message" rows="5" required></textarea>
+    </p>
+    <button type="submit">Create Topic</button>
+</form>
+
+{% endblock %}

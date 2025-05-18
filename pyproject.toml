@@ -1,0 +1,9 @@
+[project]
+name = "myforum-project"
+version = "0.1.0"
+description = "A forum application build with Python & Django"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=5.2.1",
+]
