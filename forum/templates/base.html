@@ -9,6 +9,29 @@
 
 <header>
     <h1><a href="{% url 'forum:forum_index' %}">My Simple Forum</a></h1>
+    {# Add user status and login/logout links #}
+    <div style="text-align: right;">
+        {% if user.is_authenticated %}
+        Hello, {{ user.username }}!
+        {# Use the 'logout' URL name provided by django.contrib.auth.urls #}
+        {# In Django 5.0+, you need to do a post request to logout #}
+        <div>
+            {% if user.is_authenticated %}
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+            {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            {% endif %}
+        </div>
+        {% else %}
+        {# Use the 'login' URL name provided by django.contrib.auth.urls #}
+        <a href="{% url 'login' %}">Login</a>
+        {# You could add a link to a signup page here if you create one #}
+        {# <a href="{% url 'signup' %}">Sign Up</a> #}
+        {% endif %}
+    </div>
     <hr>
 </header>
 

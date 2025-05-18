@@ -1,0 +1,25 @@
+{% extends "base.html" %} {# You can use your forum's base template #}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<h2>Login</h2>
+
+{% if form.errors %}
+<p style="color: red;">Your username and password didn't match. Please try again.</p>
+{% endif %}
+
+<form method="post" action="{% url 'login' %}"> {# Post to the named URL 'login' #}
+  {% csrf_token %}
+
+  {# Display the form fields provided by Django's LoginView #}
+  {{ form.as_p }} {# Renders the form fields wrapped in <p> tags #}
+
+    <button type="submit">Login</button>
+    {# You might want to add a link to a password reset page later #}
+    {# <a href="{% url 'password_reset' %}">Lost password?</a> #}
+</form>
+
+{# Optional: Link to a registration page if you implement one #}
+{# <p><a href="{% url 'signup' %}">Don't have an account? Sign up</a></p> #}
+{% endblock %}

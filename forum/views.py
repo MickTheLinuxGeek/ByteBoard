@@ -5,7 +5,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Topic, Post
 # We'll need forms later: from .forms import NewTopicForm, NewPostForm
-# We'll need login decorators later: from django.contrib.auth.decorators import login_required
+# We'll need login decorators later:
+from django.contrib.auth.decorators import login_required
 # We might need User model later: from django.contrib.auth.models import User
 
 # View to display the list of all topics
@@ -42,7 +43,7 @@ def topic_detail(request, topic_id):
     return render(request, 'forum/topic_detail.html', context)
 
 # View for creating a new topic (placeholder for now)
-# @login_required # We'll uncomment this later to require login
+@login_required # We'll uncomment this later to require login
 def new_topic(request):
     # This view will handle both displaying the form (GET)
     # and processing the submitted form data (POST)
@@ -58,7 +59,7 @@ def new_topic(request):
         return render(request, 'forum/new_topic.html') # We'll create this template
 
 # View for creating a new post in a topic (placeholder for now)
-# @login_required # We'll uncomment this later
+@login_required # We'll uncomment this later
 def new_post(request, topic_id):
     # Get the topic this post will belong to
     topic = get_object_or_404(Topic, pk=topic_id)
