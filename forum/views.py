@@ -10,6 +10,8 @@ from .forms import NewTopicForm, NewPostForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm  # Import Django's registration form
 from django.contrib.auth import login  # Import the login function
+# Import pagination classes
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 # We might need User model later: from django.contrib.auth.models import User
@@ -17,12 +19,31 @@ from django.contrib.auth import login  # Import the login function
 # View to display the list of all topics
 def forum_index(request):
     # Query the database to get all Topic objects
-    # Order them by the creation date, newest first (-created_at)
-    topics = Topic.objects.order_by('-created_at').all()
+    all_topics_list = Topic.objects.order_by('-created_at').all()
+
+    # Set the number of topics per page
+    topics_per_page = 10  # You can adjust this number
+
+    # Create a Paginator object
+    paginator = Paginator(all_topics_list, topics_per_page)
+
+    # Get the current page number from the GET request (e.g., ?page=2)
+    page_number = request.GET.get('page')
+
+    try:
+        # Get the Page object for the requested page number
+        topics_page = paginator.page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        topics_page = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g., 9999), deliver last page of results.
+        topics_page = paginator.page(paginator.num_pages)
 
     # Prepare the context dictionary to pass data to the template
+    # We pass the 'Page' object, not the full list of topics
     context = {
-        'topics': topics,
+        'topics_page': topics_page,
     }
 
     # Render the template 'forum/forum_index.html' with the context data

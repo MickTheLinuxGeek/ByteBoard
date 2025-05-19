@@ -1,18 +1,19 @@
-{% extends 'base.html' %} {# Inherit structure from base.html #}
+{% extends 'base.html' %}
 
-{% block title %}Forum Topics{% endblock %} {# Override the title block #}
+{% block title %}Forum Topics{% endblock %}
 
-{% block content %} {# Override the content block #}
+{% block content %}
 <h2>Forum Topics</h2>
 
 <p>
     <a href="{% url 'forum:new_topic' %}">Start a New Topic</a>
-    {# We'll want to hide this link if the user isn't logged in, later #}
 </p>
 
-{% if topics %}
+{# Check if the topics_page (Page object) has items #}
+{% if topics_page.object_list %}
 <ul>
-    {% for topic in topics %}
+    {# Loop through topics on the current page #}
+    {% for topic in topics_page %} {# topics_page is a Page object, iterate directly over it #}
     <li>
         <a href="{% url 'forum:topic_detail' topic.id %}">
             {{ topic.subject }}
@@ -20,11 +21,31 @@
         <small>
             by {{ topic.created_by.username }}
             on {{ topic.created_at|date:"M d, Y H:i" }}
-            ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }}) {# Show post count #}
+            ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
         </small>
     </li>
     {% endfor %}
 </ul>
+
+{# Pagination Links #}
+<div class="pagination">
+            <span class="step-links">
+                {% if topics_page.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ topics_page.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ topics_page.number }} of {{ topics_page.paginator.num_pages }}.
+                </span>
+
+                {% if topics_page.has_next %}
+                    <a href="?page={{ topics_page.next_page_number }}">next</a>
+                    <a href="?page={{ topics_page.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+</div>
+
 {% else %}
 <p>No topics have been created yet.</p>
 {% endif %}
