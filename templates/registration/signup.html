@@ -1,0 +1,18 @@
+{% extends "base.html" %} {# Use the main base template #}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<h2>Sign Up</h2>
+
+<form method="post" action="{% url 'signup' %}"> {# Post to the named URL 'signup' #}
+    {% csrf_token %}
+
+    {# Render the form provided by UserCreationForm #}
+    {{ form.as_p }} {# Renders fields like username, password, password confirmation #}
+
+    <button type="submit">Sign Up</button>
+</form>
+
+<p>Already have an account? <a href="{% url 'login' %}">Login here</a>.</p>
+{% endblock %}

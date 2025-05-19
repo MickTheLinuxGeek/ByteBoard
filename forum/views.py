@@ -8,6 +8,8 @@ from .models import Topic, Post
 from .forms import NewTopicForm, NewPostForm
 # We'll need login decorators later:
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm  # Import Django's registration form
+from django.contrib.auth import login  # Import the login function
 
 
 # We might need User model later: from django.contrib.auth.models import User
@@ -115,3 +117,27 @@ def new_post(request, topic_id):
         'form': form,
     }
     return render(request, 'forum/new_post.html', context)
+
+
+# View for user registration/signup
+def signup(request):
+    if request.method == 'POST':
+        # Instantiate the form with the submitted data
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            # Form is valid, save the new user
+            user = form.save()  # This creates the user instance with a hashed password
+            # Log the user in automatically after successful registration
+            login(request, user)
+            # Redirect to the forum index page
+            return redirect('forum:forum_index')
+        # If form is invalid, execution continues to the render statement below,
+        # and the 'form' instance now contains errors (e.g., username taken, passwords don't match)
+    else:
+        # GET request: Create a blank instance of the form
+        form = UserCreationForm()
+
+    # Render the template with the form (either blank or with errors)
+    context = {'form': form}
+    # We'll create this template in the project's templates/registration directory
+    return render(request, 'registration/signup.html', context)

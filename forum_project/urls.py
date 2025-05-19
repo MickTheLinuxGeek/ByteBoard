@@ -17,11 +17,14 @@ Including another URLconf
 from django.contrib import admin
 # Import include
 from django.urls import path, include
+from forum import views as forum_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     # Add this line: directs URLs starting with 'forum/' to the forum app's urls.py
     path('forum/', include('forum.urls')),
+    # Add the signup URL
+    path('accounts/signup/', forum_views.signup, name='signup'),  # Map to our new view
     # We could add a path for the homepage later if needed
     # path('', some_view_for_homepage, name='home'),
     # Add this line to include Django's built-in authentication URLs

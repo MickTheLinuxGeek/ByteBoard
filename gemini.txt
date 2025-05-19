@@ -1206,3 +1206,176 @@ What area would you like to focus on next? Some possibilities:
 
 
 #####
+Okay, let's add a user registration feature so new users can create their own accounts directly through the website. We'll use Django's built-in `UserCreationForm` which simplifies the process significantly by handling username validation, password complexity checks, password confirmation, and secure password hashing.
+
+**Step 9: Implement User Registration**
+
+**1. Create Registration View (`forum/views.py`)**
+
+We need a view function to handle displaying the signup form and processing the submitted data.
+
+Add the following function to `forum/views.py`:
+
+```python
+# forum/views.py
+
+# ... other imports ...
+from django.contrib.auth.forms import UserCreationForm # Import Django's registration form
+from django.contrib.auth import login # Import the login function
+
+# ... other views (forum_index, topic_detail, new_topic, new_post) ...
+
+
+# View for user registration/signup
+def signup(request):
+    if request.method == 'POST':
+        # Instantiate the form with the submitted data
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            # Form is valid, save the new user
+            user = form.save() # This creates the user instance with a hashed password
+            # Log the user in automatically after successful registration
+            login(request, user)
+            # Redirect to the forum index page
+            return redirect('forum:forum_index')
+        # If form is invalid, execution continues to the render statement below,
+        # and the 'form' instance now contains errors (e.g., username taken, passwords don't match)
+    else:
+        # GET request: Create a blank instance of the form
+        form = UserCreationForm()
+
+    # Render the template with the form (either blank or with errors)
+    context = {'form': form}
+    # We'll create this template in the project's templates/registration directory
+    return render(request, 'registration/signup.html', context)
+
+```
+
+**Explanation:**
+
+* **`from django.contrib.auth.forms import UserCreationForm`**: Imports the standard Django form for creating users.
+* **`from django.contrib.auth import login`**: Imports the function needed to log a user in programmatically.
+* **`signup(request)` function:**
+    * **POST Request:**
+        * It creates a `UserCreationForm` instance populated with the submitted data (`request.POST`).
+        * `form.is_valid()`: Checks if the username is unique, if the passwords match, and if the password meets complexity requirements (if configured).
+        * `user = form.save()`: If valid, this saves the new `User` object to the database. `UserCreationForm` automatically handles hashing the password securely.
+        * `login(request, user)`: Logs the newly created user into the current session.
+        * `redirect('forum:forum_index')`: Redirects the now logged-in user to the forum homepage.
+    * **GET Request:**
+        * It creates a blank `UserCreationForm`.
+        * It renders the `registration/signup.html` template, passing the empty form to it.
+
+**2. Create Registration Template (`templates/registration/signup.html`)**
+
+This template will display the signup form. We'll put it in the project-level `templates/registration` directory we created for the login template.
+
+Create the file `templates/registration/signup.html`:
+
+```html
+{% extends "base.html" %} {# Use the main base template #}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+    <h2>Sign Up</h2>
+
+    <form method="post" action="{% url 'signup' %}"> {# Post to the named URL 'signup' #}
+        {% csrf_token %}
+
+        {# Render the form provided by UserCreationForm #}
+        {{ form.as_p }} {# Renders fields like username, password, password confirmation #}
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <p>Already have an account? <a href="{% url 'login' %}">Login here</a>.</p>
+{% endblock %}
+
+```
+
+**Explanation:**
+
+* It extends our `base.html`.
+* The form posts to the URL named `signup` (which we'll create next).
+* `{% csrf_token %}` is included for security.
+* `{{ form.as_p }}` renders the fields defined in `UserCreationForm` (username, password 1, password 2) along with helpful labels and any validation errors if the form submission fails.
+
+**3. Add URL for Registration**
+
+We need to map a URL to our new `signup` view. Let's add it to the main project `urls.py`, alongside the other authentication URLs.
+
+Open `forum_project/urls.py` and modify it:
+
+```python
+# forum_project/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+# Import the views module from the forum app
+from forum import views as forum_views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('forum/', include('forum.urls')),
+
+    # Add the signup URL
+    path('accounts/signup/', forum_views.signup, name='signup'), # Map to our new view
+
+    # Include the default auth URLs (for login, logout, password management)
+    path('accounts/', include('django.contrib.auth.urls')),
+
+]
+```
+
+**Explanation:**
+
+* We imported the views from our `forum` app as `forum_views` to avoid naming conflicts.
+* `path('accounts/signup/', forum_views.signup, name='signup')`: This line maps the URL `/accounts/signup/` to the `signup` function in `forum/views.py` and gives it the name `signup`. *Important:* Place this line *before* the `path('accounts/', include('django.contrib.auth.urls'))` line, otherwise the generic `accounts/` include might try to handle `/accounts/signup/` incorrectly if it had a pattern matching it (which it doesn't by default, but it's good practice for clarity).
+
+**4. Update Base Template with Signup Link**
+
+Finally, let's add a "Sign Up" link to the header in our `base.html` template so users can easily find the registration page.
+
+Edit `forum/templates/base.html` and modify the header section again:
+
+```html
+    <header>
+        <h1><a href="{% url 'forum:forum_index' %}">My Simple Forum</a></h1>
+        <div style="text-align: right;">
+            {% if user.is_authenticated %}
+                Hello, {{ user.username }}!
+                <a href="{% url 'logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'login' %}">Login</a>
+                {# Add the Sign Up link here #}
+                | <a href="{% url 'signup' %}">Sign Up</a>
+            {% endif %}
+        </div>
+        <hr>
+    </header>
+```
+
+**Explanation:**
+
+* Inside the `{% else %}` block (which applies when `user.is_authenticated` is false), we added a link pointing to the URL named `signup`.
+
+**Test Registration:**
+
+1.  Make sure the server is running (`python manage.py runserver`).
+2.  Log out if you are currently logged in.
+3.  Visit the forum index (`http://127.0.0.1:8000/forum/`). You should now see both "Login" and "Sign Up" links in the header.
+4.  Click the "Sign Up" link (or go directly to `/accounts/signup/`).
+5.  You should see the registration form with fields for Username, Password, and Password confirmation. Notice the help text regarding password requirements.
+6.  Try submitting with invalid data (e.g., mismatched passwords, a username that already exists like your superuser). You should see validation errors displayed on the form.
+7.  Enter a unique username and a valid password (meeting complexity requirements) in both password fields.
+8.  Click "Sign Up".
+9.  If successful, you should be automatically logged in as the new user and redirected to the forum index page. The header should now show "Hello, [new_username]!" and the "Logout" link.
+10. You can verify the user was created by checking the Django Admin site (`/admin/`) under the "Users" section.
+
+You now have a working user registration system! Users can create accounts, log in, and participate in the forum by creating topics and posts.
+
+What's the next feature or improvement you'd like to work on? Pagination for the topic list is often a good next step for usability.
+
+
+#####
