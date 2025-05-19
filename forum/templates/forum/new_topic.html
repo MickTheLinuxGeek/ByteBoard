@@ -9,14 +9,9 @@
 <form method="post" action=""> {# Post to the current URL #}
     {% csrf_token %} {# IMPORTANT: Cross-Site Request Forgery protection #}
 
-    <p>
-        <label for="id_subject">Subject:</label><br>
-        <input type="text" name="subject" id="id_subject" required maxlength="255">
-    </p>
-    <p>
-        <label for="id_message">Message:</label><br>
-        <textarea name="message" id="id_message" rows="5" required></textarea>
-    </p>
+    {# Render the form fields using Django's form rendering #}
+    {{ form.as_p }} {# Renders fields and labels in html paragraph tags, includes errors #}
+
     <button type="submit">Create Topic</button>
 </form>
 

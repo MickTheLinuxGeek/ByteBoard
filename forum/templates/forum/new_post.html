@@ -10,10 +10,9 @@
 <form method="post" action=""> {# Post to the current URL #}
     {% csrf_token %} {# Essential CSRF protection #}
 
-    <p>
-        <label for="id_message">Your Reply:</label><br>
-        <textarea name="message" id="id_message" rows="5" required></textarea>
-    </p>
+    {# Render the form fields #}
+    {{ form.as_p }} {# Renders fields and labels in a html paragraph tags, includes errors #}
+
     <button type="submit">Post Reply</button>
 </form>
 

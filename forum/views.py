@@ -4,9 +4,12 @@
 
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Topic, Post
-# We'll need forms later: from .forms import NewTopicForm, NewPostForm
+# We'll need forms later:
+from .forms import NewTopicForm, NewPostForm
 # We'll need login decorators later:
 from django.contrib.auth.decorators import login_required
+
+
 # We might need User model later: from django.contrib.auth.models import User
 
 # View to display the list of all topics
@@ -22,6 +25,7 @@ def forum_index(request):
 
     # Render the template 'forum/forum_index.html' with the context data
     return render(request, 'forum/forum_index.html', context)
+
 
 # View to display a single topic and its posts
 def topic_detail(request, topic_id):
@@ -42,37 +46,72 @@ def topic_detail(request, topic_id):
     # Render the template 'forum/topic_detail.html'
     return render(request, 'forum/topic_detail.html', context)
 
-# View for creating a new topic (placeholder for now)
-@login_required # We'll uncomment this later to require login
-def new_topic(request):
-    # This view will handle both displaying the form (GET)
-    # and processing the submitted form data (POST)
-    # We will add form logic here in a later step.
-    if request.method == 'POST':
-        # Process form data (to be implemented)
-        # For now, just redirect back to the index after attempting a post
-        return redirect('forum:forum_index') # Redirect using the URL name
-    else:
-        # Display a blank form (to be implemented using Django Forms)
-        # For now, just render a simple placeholder template or message
-        # Let's assume we'll have a template 'forum/new_topic.html'
-        return render(request, 'forum/new_topic.html') # We'll create this template
 
-# View for creating a new post in a topic (placeholder for now)
-@login_required # We'll uncomment this later
+@login_required
+def new_topic(request):
+    if request.method == 'POST':
+        # Instantiate the form with submitted data
+        form = NewTopicForm(request.POST)
+        if form.is_valid():  # Check if the form data is valid
+            # Get the cleaned data from the form
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+            user = request.user  # Get the currently logged-in user
+
+            # Create the Topic instance
+            topic = Topic.objects.create(
+                subject=subject,
+                created_by=user
+            )
+
+            # Create the initial Post instance for this topic
+            Post.objects.create(
+                message=message,
+                topic=topic,
+                created_by=user
+            )
+
+            # Redirect to the newly created topic's detail page
+            return redirect('forum:topic_detail', topic_id=topic.pk)
+        # If form is not valid, execution continues to the render statement below,
+        # and the 'form' instance now contains errors.
+    else:
+        # GET request: Create a blank instance of the form
+        form = NewTopicForm()
+
+    # Render the template with the form (either blank or with errors)
+    context = {'form': form}
+    return render(request, 'forum/new_topic.html', context)
+
+
+@login_required
 def new_post(request, topic_id):
-    # Get the topic this post will belong to
     topic = get_object_or_404(Topic, pk=topic_id)
 
-    # This view will also handle GET (show form) and POST (process form)
-    # We will add form logic here later.
     if request.method == 'POST':
-        # Process form data (to be implemented)
-        # For now, redirect back to the topic detail page after attempting a post
-        return redirect('forum:topic_detail', topic_id=topic.id) # Need to pass topic_id for the URL
+        form = NewPostForm(request.POST)
+        if form.is_valid():
+            message = form.cleaned_data['message']
+            user = request.user
+
+            # Create the Post instance, linking it to the topic and user
+            Post.objects.create(
+                message=message,
+                topic=topic,
+                created_by=user
+            )
+            # Optionally, update the topic's last_updated field here if you add one
+
+            # Redirect back to the topic detail page
+            return redirect('forum:topic_detail', topic_id=topic.pk)
+        # If form is invalid, render the page again with the form containing errors
     else:
-        # Display a blank form (to be implemented using Django Forms)
-        # We pass the topic to the template so the form knows where to post
-        context = {'topic': topic}
-        # Let's assume we'll have a template 'forum/new_post.html'
-        return render(request, 'forum/new_post.html', context) # We'll create this template
+        # GET request: Create a blank instance of the form
+        form = NewPostForm()
+
+    # Render the template with the topic and the form
+    context = {
+        'topic': topic,
+        'form': form,
+    }
+    return render(request, 'forum/new_post.html', context)
