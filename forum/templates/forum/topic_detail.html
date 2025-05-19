@@ -23,7 +23,11 @@
 
     {# Add Edit link if the user is the author #}
     {% if user == post.created_by %}
-    <p><a href="{% url 'forum:edit_post' post.id %}" class="edit-link">Edit Post</a></p>
+    <p>
+        <a href="{% url 'forum:edit_post' post.id %}" class="edit-link">Edit Post</a>
+        {# Add Delete link here, next to Edit #}
+        | <a href="{% url 'forum:delete_post' post.id %}" class="delete-link" style="color: #dc3545;">Delete Post</a>
+    </p>
     {% endif %}
 </div>
 {% if not forloop.last %}

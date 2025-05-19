@@ -26,7 +26,25 @@
         </div>
         {# Removed the HTML hr as borders are often handled by CSS #}
     </header>
-
+    {% if messages %}
+    <ul class="messages" style="list-style-type: none; padding: 0;">
+        {% for message in messages %}
+        <li {% if message.tags %} class="{{ message.tags }}" {% endif %}
+            style="
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        color: #fff;
+        {% if message.tags == 'success' %}background-color: #28a745;{% endif %}
+        {% if message.tags == 'error' %}background-color: #dc3545;{% endif %}
+        {% if message.tags == 'warning' %}background-color: #ffc107; color: #333;{% endif %}
+        {% if message.tags == 'info' %}background-color: #17a2b8;{% endif %}
+        "
+        >{{ message }}
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
     <main>
         {% block content %}
         {% endblock %}

@@ -18,6 +18,10 @@ urlpatterns = [
 
     # Example: /forum/topic/5/new_post/
     path('topic/<int:topic_id>/new_post/', views.new_post, name='new_post'),
+
     # Add this line for editing posts
     path('post/<int:post_id>/edit/', views.edit_post, name='edit_post'),
+
+    # Add this line for deleting posts
+    path('post/<int:post_id>/delete/', views.delete_post, name='delete_post'),
 ]

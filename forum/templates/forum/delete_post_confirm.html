@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Post{% endblock %}
+
+{% block content %}
+<h2>Confirm Delete Post</h2>
+<hr>
+<p>Are you sure you want to delete the following post from the topic "<strong>{{ topic.subject }}</strong>"?</p>
+
+<div class="post" style="background-color: #f9f9f9; border-left: 3px solid #dc3545; padding-left: 10px;">
+    <p><strong>{{ post.created_by.username }}</strong> wrote on {{ post.created_at|date:"M d, Y P" }}:</p>
+    <p><em>{{ post.message|truncatewords:50|linebreaksbr }}</em></p>
+</div>
+
+<form method="post" action="{% url 'forum:delete_post' post.id %}" style="margin-top: 20px;">
+    {% csrf_token %}
+    <button type="submit" class="btn-danger"
+            style="background-color: #dc3545; color: white; border: none; cursor: pointer; border-radius: 5px; padding: 10px 15px; display: inline-block;">
+        Yes, Delete Post
+    </button>
+    <a href="{% url 'forum:topic_detail' post.topic.id %}"
+       style="margin-left: 15px; text-decoration: none; background-color: #6c757d; color: white; padding: 10px 15px; border-radius: 5px;">Cancel</a>
+</form>
+{% endblock %}

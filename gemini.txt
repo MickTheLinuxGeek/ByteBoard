@@ -2113,3 +2113,219 @@ What would you like to implement next? Some ideas:
 
 
 #####
+Okay, let's implement the ability for users to delete their own posts. This will be similar to editing, involving permission checks and a confirmation step to prevent accidental deletions.
+
+**Step 13: Allow Users to Delete Their Own Posts**
+
+**1. Create URL for Deleting Posts (`forum/urls.py`)**
+
+Add a new URL pattern for the delete post confirmation page and for processing the deletion.
+
+  * Open `forum/urls.py` and add the new path:
+
+<!-- end list -->
+
+```python
+# forum/urls.py
+
+from django.urls import path
+from . import views
+
+app_name = 'forum'
+
+urlpatterns = [
+    path('', views.forum_index, name='forum_index'),
+    path('topic/<int:topic_id>/', views.topic_detail, name='topic_detail'),
+    path('new_topic/', views.new_topic, name='new_topic'),
+    path('topic/<int:topic_id>/new_post/', views.new_post, name='new_post'),
+    path('post/<int:post_id>/edit/', views.edit_post, name='edit_post'),
+    # Add this line for deleting posts
+    path('post/<int:post_id>/delete/', views.delete_post, name='delete_post'),
+]
+```
+
+**2. Create `delete_post` View (`forum/views.py`)**
+
+This view will handle both displaying the confirmation page (GET request) and processing the actual deletion (POST request).
+
+  * Open `forum/views.py` and add the following:
+
+<!-- end list -->
+
+```python
+# forum/views.py
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.utils import timezone
+from django.contrib import messages # Import messages framework
+
+from .models import Topic, Post
+from .forms import NewTopicForm, NewPostForm
+# ... (other views: forum_index, topic_detail, new_topic, new_post, edit_post, signup) ...
+
+@login_required
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    topic_id_for_redirect = post.topic.id # Store topic ID before post is deleted
+
+    # Check if the current user is the author of the post
+    if post.created_by != request.user:
+        # If not, return a forbidden response or redirect
+        messages.error(request, "You are not allowed to delete this post.")
+        return redirect('forum:topic_detail', topic_id=topic_id_for_redirect)
+
+    if request.method == 'POST':
+        # User has confirmed deletion via POST request
+        post_message_preview = post.message[:30] # For the message
+        post.delete()
+        messages.success(request, f"Post '{post_message_preview}...' has been deleted.")
+        # Redirect to the topic detail page where the post was
+        return redirect('forum:topic_detail', topic_id=topic_id_for_redirect)
+    else:
+        # GET request: Display confirmation page
+        context = {
+            'post': post,
+            'topic': post.topic, # For cancel link and context
+        }
+        return render(request, 'forum/delete_post_confirm.html', context)
+```
+
+**Explanation:**
+
+  * `@login_required`: Ensures only logged-in users can access.
+  * `post = get_object_or_404(Post, pk=post_id)`: Retrieves the post.
+  * `topic_id_for_redirect = post.topic.id`: We grab the `topic.id` *before* potentially deleting the post, so we know where to redirect.
+  * **Permission Check:** `if post.created_by != request.user:`. If the user is not the author, an error message is added using `django.contrib.messages` and they are redirected.
+  * **POST Request (Confirmation of Deletion):**
+      * `post.delete()`: This is the Django ORM method that removes the object from the database.
+      * `messages.success(...)`: A success message is flashed to the user.
+      * Redirects back to the topic detail page.
+  * **GET Request (Show Confirmation):**
+      * The `post` and its `topic` are passed to the `forum/delete_post_confirm.html` template.
+
+**3. Create Delete Confirmation Template (`forum/templates/forum/delete_post_confirm.html`)**
+
+This template will ask the user to confirm that they really want to delete the post.
+
+  * Create `forum/templates/forum/delete_post_confirm.html`:
+
+<!-- end list -->
+
+```html
+{% extends 'base.html' %}
+
+{% block title %}Confirm Delete Post{% endblock %}
+
+{% block content %}
+    <h2>Confirm Delete Post</h2>
+    <hr>
+    <p>Are you sure you want to delete the following post from the topic "<strong>{{ topic.subject }}</strong>"?</p>
+
+    <div class="post" style="background-color: #f9f9f9; border-left: 3px solid #dc3545; padding-left: 10px;">
+        <p><strong>{{ post.created_by.username }}</strong> wrote on {{ post.created_at|date:"M d, Y P" }}:</p>
+        <p><em>{{ post.message|truncatewords:50|linebreaksbr }}</em></p>
+    </div>
+
+    <form method="post" action="{% url 'forum:delete_post' post.id %}" style="margin-top: 20px;">
+        {% csrf_token %}
+        <button type="submit" class="btn-danger" style="background-color: #dc3545; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 5px;">Yes, Delete Post</button>
+        <a href="{% url 'forum:topic_detail' post.topic.id %}" style="margin-left: 15px; text-decoration: none; background-color: #6c757d; color: white; padding: 10px 15px; border-radius: 5px;">Cancel</a>
+    </form>
+{% endblock %}
+```
+
+**Explanation:**
+
+  * It clearly asks for confirmation.
+  * It displays a preview of the post message (`post.message|truncatewords:50|linebreaksbr`).
+  * The form `POST`s to the same URL (`{% url 'forum:delete_post' post.id %}`). When the view receives a `POST` request on this URL, it proceeds with the deletion.
+  * Includes a "Cancel" link to go back to the topic detail page.
+
+**4. Add "Delete" Link in Topic Detail Template (`forum/templates/forum/topic_detail.html`)**
+
+Now, add a "Delete" link next to the "Edit" link for posts, visible only to the post's author.
+
+  * Open `forum/templates/forum/topic_detail.html` and modify the post loop where you added the "Edit Post" link:
+
+<!-- end list -->
+
+```html
+{# ... inside the {% for post in posts %} loop ... #}
+            {# Add Edit link if the user is the author #}
+            {% if user == post.created_by %}
+                <p>
+                    <a href="{% url 'forum:edit_post' post.id %}" class="edit-link">Edit Post</a>
+                    {# Add Delete link here, next to Edit #}
+                    | <a href="{% url 'forum:delete_post' post.id %}" class="delete-link" style="color: #dc3545;">Delete Post</a>
+                </p>
+            {% endif %}
+{# ... rest of the loop ... #}
+```
+
+**Explanation:**
+
+  * `| <a href="{% url 'forum:delete_post' post.id %}" class="delete-link" style="color: #dc3545;">Delete Post</a>`: This link is added within the same `{% if user == post.created_by %}` block, so only the author sees it. It points to the `delete_post` URL for that specific `post.id`.
+
+**5. Display Django Messages in `base.html`**
+
+To see the success/error messages from `django.contrib.messages`, you need to render them in your base template.
+
+  * Open `forum/templates/base.html` and add the following, typically inside your main content area or just below the header:
+
+<!-- end list -->
+
+```html
+{# forum/templates/base.html - inside the <div class="container"> and <main> (or just below header) #}
+
+{% if messages %}
+    <ul class="messages" style="list-style-type: none; padding: 0;">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}
+                style="
+                    padding: 10px;
+                    margin-bottom: 10px;
+                    border-radius: 5px;
+                    color: #fff;
+                    {% if message.tags == 'success' %}background-color: #28a745;{% endif %}
+                    {% if message.tags == 'error' %}background-color: #dc3545;{% endif %}
+                    {% if message.tags == 'warning' %}background-color: #ffc107; color: #333;{% endif %}
+                    {% if message.tags == 'info' %}background-color: #17a2b8;{% endif %}
+                "
+            >{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+{# The rest of your main block #}
+{% block content %}
+{% endblock %}
+```
+
+**6. Test Deletion Functionality**
+
+1.  Ensure your server is running.
+2.  Log in as a user who has created posts.
+3.  Navigate to a topic where their posts are visible. You should see "Delete Post" links next to their "Edit Post" links.
+4.  Click a "Delete Post" link. You should be taken to the confirmation page, showing a preview of the post.
+5.  Click "Cancel". You should return to the topic detail page, and the post should still be there.
+6.  Click "Delete Post" again, and this time click "Yes, Delete Post".
+7.  You should be redirected back to the topic detail page, the post should be gone, and you should see a success message like "Post '...' has been deleted."
+8.  Try to access the delete URL for a post made by another user (e.g., by manually typing the URL). You should be redirected back to the topic with an error message.
+9.  Log in as another user and verify they cannot delete posts they didn't create.
+
+**Important Consideration (First post of a topic):**
+Currently, if a user deletes the *first post* of a topic (or any post that makes the topic have zero posts), the topic itself will still exist but will appear empty. Handling the deletion of the topic itself when its core content is gone is a more complex feature you might consider later. For example, you could:
+
+  * Prevent deletion of the first/only post.
+  * If the first post is deleted, automatically delete the parent topic.
+  * If any deletion results in zero posts for a topic, delete the topic.
+
+For now, our implementation allows deleting any post by its author.
+
+You've now successfully added the ability for users to delete their own posts\!
+What would you like to tackle next?
+
+
+#####

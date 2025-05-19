@@ -10,6 +10,7 @@ from .forms import NewTopicForm, NewPostForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden  # For permission errors
 from django.utils import timezone  # Import timezone
+from django.contrib import messages  # Import messages framework
 from django.contrib.auth.forms import UserCreationForm  # Import Django's registration form
 from django.contrib.auth import login  # Import the login function
 # Import pagination classes
@@ -199,3 +200,30 @@ def edit_post(request, post_id):
         'topic': post.topic  # Pass topic for breadcrumbs or cancel link
     }
     return render(request, 'forum/edit_post.html', context)
+
+
+@login_required
+def delete_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+    topic_id_for_redirect = post.topic.id  # Store topic ID before post is deleted
+
+    # Check if the current user is the author of the post
+    if post.created_by != request.user:
+        # If not, return a forbidden response or redirect
+        messages.error(request, "You are not allowed to delete this post.")
+        return redirect('forum:topic_detail', topic_id=topic_id_for_redirect)
+
+    if request.method == 'POST':
+        # User has confirmed deletion via POST request
+        post_message_preview = post.message[:30]  # For the message
+        post.delete()
+        messages.success(request, f"Post '{post_message_preview}...' has been deleted.")
+        # Redirect to the topic detail page where the post was
+        return redirect('forum:topic_detail', topic_id=topic_id_for_redirect)
+    else:
+        # GET request: Display confirmation page
+        context = {
+            'post': post,
+            'topic': post.topic,  # For cancel link and context
+        }
+        return render(request, 'forum/delete_post_confirm.html', context)
