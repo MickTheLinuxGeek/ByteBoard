@@ -1,0 +1,199 @@
+/* forum/static/forum/style.css */
+
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+    padding: 0 20px;
+}
+
+header {
+    background: #333;
+    color: #fff;
+    padding-top: 30px;
+    min-height: 70px;
+    border-bottom: #0779e4 3px solid;
+}
+
+header a {
+    color: #fff;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+header form {
+    background: #333;
+    color: #333;
+    border: 0;
+    padding: 7px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+header h1 a {
+    float: left;
+}
+
+header .auth-links {
+    float: right;
+    margin-top: 10px;
+}
+
+header .auth-links a {
+    margin-left: 15px;
+}
+
+header::after { /* Clearfix for floated elements */
+    content: "";
+    display: table;
+    clear: both;
+}
+
+
+main {
+    padding: 20px 0;
+}
+
+h2, h3 {
+    color: #0779e4;
+}
+
+/* Form styling */
+form {
+    background: #fff;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+form input[type="text"],
+form input[type="password"],
+form textarea {
+    width: calc(100% - 22px); /* Account for padding and border */
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+form button[type="submit"] {
+    display: block;
+    background: #0779e4;
+    color: #fff;
+    border: 0;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+form button[type="submit"]:hover {
+    background: #0056b3;
+}
+
+/* Error messages from forms */
+.errorlist {
+    color: red;
+    list-style-type: none;
+    padding-left: 0;
+    margin-bottom: 10px;
+}
+
+.errorlist li {
+    margin-bottom: 5px;
+}
+
+
+/* Topic List */
+.topic-list ul {
+    list-style: none;
+    padding: 0;
+}
+
+.topic-list li {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.topic-list li a {
+    text-decoration: none;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.topic-list li a:hover {
+    color: #0779e4;
+}
+
+.topic-list li small {
+    display: block;
+    color: #666;
+    font-size: 0.9em;
+    margin-top: 5px;
+}
+
+/* Post details */
+.post {
+    background: #fff;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.post strong {
+    color: #0056b3;
+}
+
+/* Pagination */
+.pagination {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.pagination .step-links a,
+.pagination .current {
+    padding: 5px 10px;
+    margin: 0 2px;
+    border: 1px solid #ddd;
+    text-decoration: none;
+    color: #0779e4;
+    border-radius: 3px;
+}
+
+.pagination .current {
+    background: #0779e4;
+    color: #fff;
+    border-color: #0779e4;
+}
+
+.pagination a:hover {
+    background-color: #f0f0f0;
+}
+
+
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    color: #666;
+    border-top: 1px solid #eee;
+}
