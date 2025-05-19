@@ -1844,3 +1844,272 @@ What would you like to refine or add next?
 
 
 #####
+Okay, allowing users to edit their own posts is a great feature to add! This involves checking permissions, creating a new view and template for editing, and updating the post in the database.
+
+Here's how we can implement it:
+
+**Step 12: Allow Users to Edit Their Own Posts**
+
+**1. Update `Post` Model (`forum/models.py`)**
+
+Let's add a field to track when a post was last updated.
+
+* Open `forum/models.py`.
+* Import `timezone` from `django.utils`.
+* Add the `updated_at` field to the `Post` model.
+
+```python
+# forum/models.py
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone # Import timezone
+
+# Topic model (no changes)
+class Topic(models.Model):
+    subject = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, related_name='topics', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.subject
+
+# Model for a post/reply within a topic
+class Post(models.Model):
+    message = models.TextField()
+    topic = models.ForeignKey(Topic, related_name='posts', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, related_name='posts_created', on_delete=models.CASCADE) # Changed related_name to avoid clash
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True) # Field to store last update time
+
+    def __str__(self):
+        return self.message[:50] + ('...' if len(self.message) > 50 else '')
+
+```
+*Self-correction: The `related_name` for `Post.created_by` was 'posts'. If `Topic.created_by` uses 'topics', it's fine, but if `User` had another ForeignKey named 'posts', it would clash. Changing `Post.created_by`'s `related_name` to something more specific like `posts_created` or `authored_posts` is safer. I've updated it to `posts_created`.*
+
+**Make and Apply Migrations:**
+
+Since we changed the model, run these commands in your terminal:
+```bash
+python manage.py makemigrations forum
+python manage.py migrate
+```
+
+**2. Create URL for Editing Posts (`forum/urls.py`)**
+
+Add a new URL pattern for the edit post page.
+
+* Open `forum/urls.py` and add the new path:
+
+```python
+# forum/urls.py
+
+from django.urls import path
+from . import views
+
+app_name = 'forum'
+
+urlpatterns = [
+    path('', views.forum_index, name='forum_index'),
+    path('topic/<int:topic_id>/', views.topic_detail, name='topic_detail'),
+    path('new_topic/', views.new_topic, name='new_topic'),
+    path('topic/<int:topic_id>/new_post/', views.new_post, name='new_post'),
+    # Add this line for editing posts
+    path('post/<int:post_id>/edit/', views.edit_post, name='edit_post'),
+]
+```
+
+**3. Create `EditPostForm` (Optional, or reuse `NewPostForm`)**
+
+For editing, the form is very similar to creating a new post (it primarily needs the 'message' field). We can reuse `NewPostForm` if it's a `forms.Form`. If it were a `ModelForm`, it would be slightly more direct for updates. Let's assume `NewPostForm` is our current `forms.Form` that just has a `message` field. If you've already refactored `NewPostForm` to a `ModelForm`, that's even better for this step.
+
+For clarity, let's ensure `NewPostForm` is flexible or create a specific `EditPostForm`. Given our current `NewPostForm` from Step 7 is a `forms.Form`, it will work.
+
+**4. Create `edit_post` View (`forum/views.py`)**
+
+This view will handle the logic for displaying the edit form and saving changes.
+
+* Open `forum/views.py` and add the following:
+
+```python
+# forum/views.py
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden # For permission errors
+from django.utils import timezone # Import timezone
+
+from .models import Topic, Post
+from .forms import NewTopicForm, NewPostForm # Assuming NewPostForm can be reused
+# ... (other views) ...
+
+@login_required
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+
+    # Check if the current user is the author of the post
+    if post.created_by != request.user:
+        # If not, return a forbidden response or redirect
+        return HttpResponseForbidden("You are not allowed to edit this post.")
+        # Alternatively, you could redirect with a message:
+        # from django.contrib import messages
+        # messages.error(request, "You do not have permission to edit this post.")
+        # return redirect('forum:topic_detail', topic_id=post.topic.id)
+
+    if request.method == 'POST':
+        # Pass instance=post to pre-populate and update the existing post if using ModelForm
+        # If using forms.Form, we handle it slightly differently
+        form = NewPostForm(request.POST) # Re-use NewPostForm
+        if form.is_valid():
+            post.message = form.cleaned_data['message']
+            post.updated_at = timezone.now() # Set the updated_at timestamp
+            post.save()
+            # Redirect to the topic detail page where the post is located
+            return redirect('forum:topic_detail', topic_id=post.topic.id)
+    else:
+        # GET request: Populate the form with the existing post's message
+        form = NewPostForm(initial={'message': post.message})
+
+    context = {
+        'form': form,
+        'post': post, # Pass the post object for context in the template
+        'topic': post.topic # Pass topic for breadcrumbs or cancel link
+    }
+    return render(request, 'forum/edit_post.html', context)
+```
+
+**Explanation:**
+* `@login_required`: Ensures only logged-in users can attempt to access this view.
+* `post = get_object_or_404(Post, pk=post_id)`: Retrieves the post to be edited.
+* **Permission Check:** `if post.created_by != request.user:` This is crucial. It checks if the logged-in user is the one who created the post. If not, it returns an `HttpResponseForbidden`.
+* **POST Request:**
+    * The form is instantiated with `request.POST`.
+    * If valid, `post.message` is updated from `form.cleaned_data['message']`.
+    * `post.updated_at = timezone.now()`: Sets the current time to the `updated_at` field.
+    * `post.save()`: Saves the changes to the existing post object.
+    * Redirects back to the topic detail page.
+* **GET Request:**
+    * `form = NewPostForm(initial={'message': post.message})`: The form is pre-populated with the current message of the post using the `initial` argument.
+* The `post` and `topic` objects are passed to the template for context (e.g., for a "Cancel" link or to display information).
+
+**If `NewPostForm` was a `ModelForm`:**
+The view would be slightly cleaner for saving:
+```python
+# If NewPostForm is a ModelForm (like in the optional refactor of Step 7)
+# from .forms import NewPostForm # (assuming it's a ModelForm for Post)
+
+# ... inside edit_post view ...
+    if request.method == 'POST':
+        form = NewPostForm(request.POST, instance=post) # Pass the instance to update
+        if form.is_valid():
+            edited_post = form.save(commit=False) # Don't save to DB yet
+            edited_post.updated_at = timezone.now()
+            edited_post.save() # Now save with updated_at
+            # form.save_m2m() # if there were m2m fields
+            return redirect('forum:topic_detail', topic_id=post.topic.id)
+    else:
+        form = NewPostForm(instance=post) # Pre-populate form from the post instance
+# ...
+```
+
+**5. Create Edit Post Template (`forum/templates/forum/edit_post.html`)**
+
+This template will display the form for editing a post.
+
+* Create `forum/templates/forum/edit_post.html`:
+
+```html
+{% extends 'base.html' %}
+
+{% block title %}Edit Post{% endblock %}
+
+{% block content %}
+    <h2>Edit Post</h2>
+    <p>Editing your post in topic: <a href="{% url 'forum:topic_detail' topic.id %}">{{ topic.subject }}</a></p>
+
+    <form method="post" action="{% url 'forum:edit_post' post.id %}"> {# Post to the edit_post URL #}
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Save Changes</button>
+    </form>
+
+    <p style="margin-top: 15px;">
+        <a href="{% url 'forum:topic_detail' post.topic.id %}">Cancel and return to topic</a>
+    </p>
+{% endblock %}
+```
+**Explanation:**
+* The form's `action` attribute now points to `{% url 'forum:edit_post' post.id %}`.
+* It displays the form and a "Save Changes" button.
+* A "Cancel" link is provided to return to the topic detail page.
+
+**6. Add "Edit" Link in Topic Detail Template (`forum/templates/forum/topic_detail.html`)**
+
+Display an "Edit" link next to each post if the currently logged-in user is the author of that post. Also, let's display the `updated_at` timestamp if it exists.
+
+* Open `forum/templates/forum/topic_detail.html` and modify the post loop:
+
+```html
+{% extends 'base.html' %}
+
+{% block title %}{{ topic.subject }}{% endblock %}
+
+{% block content %}
+    <p><a href="{% url 'forum:forum_index' %}">&laquo; Back to Topics</a></p>
+
+    <h2>{{ topic.subject }}</h2>
+    <p>
+        <a href="{% url 'forum:new_post' topic.id %}">Post a Reply</a>
+    </p>
+    <hr>
+
+    {% for post in posts %}
+        <div class="post">
+            <p>
+                <strong>{{ post.created_by.username }}</strong> wrote on {{ post.created_at|date:"M d, Y P" }}
+                {% if post.updated_at %}
+                    (edited on {{ post.updated_at|date:"M d, Y P" }})
+                {% endif %}
+            </p>
+            <p>{{ post.message|linebreaksbr }}</p>
+
+            {# Add Edit link if the user is the author #}
+            {% if user == post.created_by %}
+                <p><a href="{% url 'forum:edit_post' post.id %}" class="edit-link">Edit Post</a></p>
+            {% endif %}
+        </div>
+        {% if not forloop.last %}<hr>{% endif %}
+    {% empty %}
+        <p>There are no posts in this topic yet.</p>
+    {% endfor %}
+{% endblock %}
+```
+
+**Explanation:**
+* **Display `updated_at`**: `{% if post.updated_at %}(edited on {{ post.updated_at|date:"M d, Y P" }}){% endif %}` shows the edit timestamp if the post has been updated.
+* **Conditional Edit Link**:
+    * `{% if user == post.created_by %}`: This condition checks if the `user` object (representing the currently logged-in user) is the same as the `created_by` user of the `post`.
+    * If true, it displays an "Edit Post" link that points to the `edit_post` URL for that specific `post.id`.
+
+**7. Test Editing Functionality**
+
+1.  Make sure your server is running.
+2.  Log in as a user who has created some posts.
+3.  Navigate to a topic detail page where one of their posts is visible. You should see an "Edit Post" link next to their posts, but not next to posts made by other users.
+4.  Click the "Edit Post" link. You should be taken to the edit page with the post's message pre-filled in the form.
+5.  Modify the message and click "Save Changes".
+6.  You should be redirected back to the topic detail page, and the post should show the updated message and the "(edited on ...)" timestamp.
+7.  Try to access the edit URL for a post made by another user (e.g., by manually typing the URL if you know a post ID). You should see the "You are not allowed to edit this post." message (or be redirected if you implemented that alternative).
+8.  Log out and log in as a different user. Verify they can only see "Edit Post" links for their own posts.
+
+You now have a system for users to edit their own posts! This adds a significant layer of interactivity to your forum.
+
+What would you like to implement next? Some ideas:
+* Deleting posts (with similar permission checks).
+* Displaying user profiles.
+* Improving the display of pagination links (e.g., showing a range of page numbers).
+* Adding "sticky" topics.
+
+
+#####

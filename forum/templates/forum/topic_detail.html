@@ -8,19 +8,27 @@
 <h2>{{ topic.subject }}</h2>
 <p>
     <a href="{% url 'forum:new_post' topic.id %}">Post a Reply</a>
-    {# We'll hide this if user isn't logged in #}
 </p>
 <hr>
 
 {% for post in posts %}
 <div class="post">
-    <p><strong>{{ post.created_by.username }}</strong> wrote on {{ post.created_at|date:"M d, Y P" }}:</p> {# P includes a.m./p.m. #}
-    {# Use linebreaksbr to convert newlines in the post message to <br> tags #}
+    <p>
+        <strong>{{ post.created_by.username }}</strong> wrote on {{ post.created_at|date:"M d, Y P" }}
+        {% if post.updated_at %}
+        (edited on {{ post.updated_at|date:"M d, Y P" }})
+        {% endif %}
+    </p>
     <p>{{ post.message|linebreaksbr }}</p>
-</div>
-{% if not forloop.last %}<hr>{% endif %} {# Add HR between posts, but not after the last one #}
-{% empty %}
-<p>There are no posts in this topic yet.</p> {# This shouldn't happen if topics require an initial post #}
-{% endfor %}
 
+    {# Add Edit link if the user is the author #}
+    {% if user == post.created_by %}
+    <p><a href="{% url 'forum:edit_post' post.id %}" class="edit-link">Edit Post</a></p>
+    {% endif %}
+</div>
+{% if not forloop.last %}
+<hr>{% endif %}
+{% empty %}
+<p>There are no posts in this topic yet.</p>
+{% endfor %}
 {% endblock %}

@@ -1,7 +1,7 @@
 # forum/urls.py
 
 from django.urls import path
-from . import views # Import views from the current directory (forum app)
+from . import views  # Import views from the current directory (forum app)
 
 # Define a namespace for easier URL referencing in templates (optional but good practice)
 app_name = 'forum'
@@ -18,4 +18,6 @@ urlpatterns = [
 
     # Example: /forum/topic/5/new_post/
     path('topic/<int:topic_id>/new_post/', views.new_post, name='new_post'),
+    # Add this line for editing posts
+    path('post/<int:post_id>/edit/', views.edit_post, name='edit_post'),
 ]

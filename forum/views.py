@@ -8,6 +8,8 @@ from .models import Topic, Post
 from .forms import NewTopicForm, NewPostForm
 # We'll need login decorators later:
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden  # For permission errors
+from django.utils import timezone  # Import timezone
 from django.contrib.auth.forms import UserCreationForm  # Import Django's registration form
 from django.contrib.auth import login  # Import the login function
 # Import pagination classes
@@ -162,3 +164,38 @@ def signup(request):
     context = {'form': form}
     # We'll create this template in the project's templates/registration directory
     return render(request, 'registration/signup.html', context)
+
+
+@login_required
+def edit_post(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
+
+    # Check if the current user is the author of the post
+    if post.created_by != request.user:
+        # If not, return a forbidden response or redirect
+        return HttpResponseForbidden("You are not allowed to edit this post.")
+        # Alternatively, you could redirect with a message:
+        # from django.contrib import messages
+        # messages.error(request, "You do not have permission to edit this post.")
+        # return redirect('forum:topic_detail', topic_id=post.topic.id)
+
+    if request.method == 'POST':
+        # Pass instance=post to pre-populate and update the existing post if using ModelForm
+        # If using forms.Form, we handle it slightly differently
+        form = NewPostForm(request.POST)  # Re-use NewPostForm
+        if form.is_valid():
+            post.message = form.cleaned_data['message']
+            post.updated_at = timezone.now()  # Set the updated_at timestamp
+            post.save()
+            # Redirect to the topic detail page where the post is located
+            return redirect('forum:topic_detail', topic_id=post.topic.id)
+    else:
+        # GET request: Populate the form with the existing post's message
+        form = NewPostForm(initial={'message': post.message})
+
+    context = {
+        'form': form,
+        'post': post,  # Pass the post object for context in the template
+        'topic': post.topic  # Pass topic for breadcrumbs or cancel link
+    }
+    return render(request, 'forum/edit_post.html', context)

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Post{% endblock %}
+
+{% block content %}
+<h2>Edit Post</h2>
+<p>Editing your post in topic: <a href="{% url 'forum:topic_detail' topic.id %}">{{ topic.subject }}</a></p>
+
+<form method="post" action="{% url 'forum:edit_post' post.id %}"> {# Post to the edit_post URL #}
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Save Changes</button>
+</form>
+
+<p style="margin-top: 15px;">
+    <a href="{% url 'forum:topic_detail' post.topic.id %}">Cancel and return to topic</a>
+</p>
+{% endblock %}
