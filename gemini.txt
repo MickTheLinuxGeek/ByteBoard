@@ -2329,3 +2329,238 @@ What would you like to tackle next?
 
 
 #####
+Okay, let's create user profile pages. This will allow users to see some basic information about other users, like their join date and a list of topics or posts they've made.
+
+For simplicity in this iteration, we'll display information directly from the built-in `User` model and their related `Topic` and `Post` objects. In a more advanced application, you might create a separate `Profile` model (with a one-to-one link to `User`) to store additional profile information like a bio, avatar, etc.
+
+**Step 14: Display User Profiles**
+
+**1. Create URL for User Profiles (`forum/urls.py`)**
+
+We'll use the username in the URL to identify the user.
+
+  * Open `forum/urls.py` and add a new path for user profiles:
+
+<!-- end list -->
+
+```python
+# forum/urls.py
+
+from django.urls import path
+from . import views
+
+app_name = 'forum'
+
+urlpatterns = [
+    # ... other url patterns ...
+    path('post/<int:post_id>/delete/', views.delete_post, name='delete_post'),
+    # Add this line for user profiles
+    path('profile/<str:username>/', views.user_profile, name='user_profile'),
+]
+```
+
+**Explanation:**
+
+  * `path('profile/<str:username>/', ...)`: This pattern captures a string from the URL (which we expect to be a username) and passes it as the `username` argument to our view.
+
+**2. Create `user_profile` View (`forum/views.py`)**
+
+This view will fetch the user's data and their associated topics and posts.
+
+  * Open `forum/views.py` and add the following:
+
+<!-- end list -->
+
+```python
+# forum/views.py
+
+from django.shortcuts import render, get_object_or_404 # redirect already imported
+# ... other imports ...
+from django.contrib.auth.models import User # Import the User model
+
+# ... (other views: forum_index, topic_detail, etc.) ...
+
+def user_profile(request, username):
+    # Get the User object for the requested username, or raise a 404 if not found
+    profile_user = get_object_or_404(User, username=username)
+
+    # Get topics created by this user, ordered by most recent
+    user_topics = Topic.objects.filter(created_by=profile_user).order_by('-created_at')
+
+    # Get posts created by this user, ordered by most recent
+    # For performance, you might want to limit this, e.g., user_posts.all()[:20]
+    user_posts = Post.objects.filter(created_by=profile_user).order_by('-created_at')
+
+    context = {
+        'profile_user': profile_user,
+        'user_topics': user_topics,
+        'user_posts': user_posts,
+    }
+    return render(request, 'forum/user_profile.html', context)
+```
+
+**Explanation:**
+
+  * `profile_user = get_object_or_404(User, username=username)`: Fetches the `User` instance whose username matches the one from the URL.
+  * `Topic.objects.filter(created_by=profile_user)...`: Retrieves all topics created by this user.
+  * `Post.objects.filter(created_by=profile_user)...`: Retrieves all posts made by this user.
+  * The `profile_user`, their `user_topics`, and `user_posts` are passed to the `user_profile.html` template.
+
+**3. Create User Profile Template (`forum/templates/forum/user_profile.html`)**
+
+This template will display the user's information.
+
+  * Create `forum/templates/forum/user_profile.html`:
+
+<!-- end list -->
+
+```html
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }}'s Profile{% endblock %}
+
+{% block content %}
+    <h2>{{ profile_user.username }}'s Profile</h2>
+    <hr>
+
+    <div class="profile-info">
+        <p><strong>Username:</strong> {{ profile_user.username }}</p>
+        <p><strong>Date Joined:</strong> {{ profile_user.date_joined|date:"F d, Y" }}</p>
+        <p><strong>Total Topics Started:</strong> {{ user_topics.count }}</p>
+        <p><strong>Total Posts Made:</strong> {{ user_posts.count }}</p>
+        {# Add link to edit profile if viewing own profile - for a future step #}
+        {% if user == profile_user %}
+             {# <p><a href="{% url 'edit_profile' %}">Edit Profile</a></p> #}
+        {% endif %}
+    </div>
+    <hr>
+
+    <div class="user-activity">
+        <h3>Topics Started by {{ profile_user.username }}</h3>
+        {% if user_topics %}
+            <ul class="topic-list">
+                {% for topic in user_topics %}
+                    <li>
+                        <a href="{% url 'forum:topic_detail' topic.id %}">{{ topic.subject }}</a>
+                        <small>on {{ topic.created_at|date:"M d, Y P" }}</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>{{ profile_user.username }} has not started any topics yet.</p>
+        {% endif %}
+
+        <h3 style="margin-top: 30px;">Recent Posts by {{ profile_user.username }}</h3>
+        {% if user_posts %}
+            <ul class="post-list" style="list-style: none; padding: 0;">
+                {% for post in user_posts|slice:":15" %} {# Display up to 15 recent posts #}
+                    <li class="post" style="margin-bottom:10px; background-color: #f9f9f9; padding:10px; border-radius:5px;">
+                        <p>
+                            In topic <a href="{% url 'forum:topic_detail' post.topic.id %}#post-{{ post.id }}"><strong>{{ post.topic.subject }}</strong></a>
+                            <small>on {{ post.created_at|date:"M d, Y P" }}</small>
+                        </p>
+                        <p>{{ post.message|truncatewords_html:30|linebreaksbr }}</p>
+                    </li>
+                {% endfor %}
+                {% if user_posts.count > 15 %}
+                    <p><em>... and more.</em></p>
+                {% endif %}
+            </ul>
+        {% else %}
+            <p>{{ profile_user.username }} has not made any posts yet.</p>
+        {% endif %}
+    </div>
+
+{% endblock %}
+```
+
+**Explanation:**
+
+  * Displays the username and date joined from `profile_user.date_joined`.
+  * Shows counts for topics and posts.
+  * Lists topics started by the user, linking to each topic.
+  * Lists recent posts (using `|slice:":15"` to show up to 15 most recent posts). Each post links to its specific topic and attempts to jump to the post itself using a URL fragment `#post-{{ post.id }}` (this would require adding `id="post-{{ post.id }}"` to the post div in `topic_detail.html` for the jump to work perfectly). `truncatewords_html:30` is used for a preview.
+
+**4. Link to User Profiles from Other Templates**
+
+Now, let's make usernames clickable links to their profiles in other parts of the forum.
+
+  * **In `forum/templates/forum/topic_detail.html` (for post authors):**
+    Modify the part where the post author's username is displayed:
+
+    ```html
+    {# ... inside the post loop in topic_detail.html ... #}
+    <p>
+        <strong><a href="{% url 'forum:user_profile' post.created_by.username %}">{{ post.created_by.username }}</a></strong> wrote on {{ post.created_at|date:"M d, Y P" }}
+        {% if post.updated_at %}
+            (edited on {{ post.updated_at|date:"M d, Y P" }})
+        {% endif %}
+    </p>
+    {# ... #}
+    ```
+
+  * **In `forum/templates/forum/forum_index.html` (for topic creators):**
+    Modify the part where the topic creator's username is displayed:
+
+    ```html
+    {# ... inside the topic loop in forum_index.html ... #}
+    <small>
+        by <a href="{% url 'forum:user_profile' topic.created_by.username %}">{{ topic.created_by.username }}</a>
+        on {{ topic.created_at|date:"M d, Y H:i" }}
+        ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
+    </small>
+    {# ... #}
+    ```
+
+**5. (Optional) Add ID to Posts in `topic_detail.html` for Anchor Links**
+
+To make the `#post-{{ post.id }}` links from the profile page work effectively to jump directly to a post:
+
+  * Open `forum/templates/forum/topic_detail.html`.
+  * Add an `id` attribute to the main div of each post in the loop:
+
+<!-- end list -->
+
+```html
+{# ... inside the {% for post in posts %} loop in topic_detail.html ... #}
+<div class="post" id="post-{{ post.id }}"> {# Add id="post-{{ post.id }}" here #}
+    <p>
+        <strong><a href="{% url 'forum:user_profile' post.created_by.username %}">{{ post.created_by.username }}</a></strong> wrote on {{ post.created_at|date:"M d, Y P" }}
+        {% if post.updated_at %}
+            (edited on {{ post.updated_at|date:"M d, Y P" }})
+        {% endif %}
+    </p>
+    <p>{{ post.message|linebreaksbr }}</p>
+
+    {% if user == post.created_by %}
+        <p>
+            <a href="{% url 'forum:edit_post' post.id %}" class="edit-link">Edit Post</a>
+            | <a href="{% url 'forum:delete_post' post.id %}" class="delete-link" style="color: #dc3545;">Delete Post</a>
+        </p>
+    {% endif %}
+</div>
+{% if not forloop.last %}<hr>{% endif %}
+{# ... #}
+```
+
+**6. Test User Profiles**
+
+1.  Make sure your server is running.
+2.  Navigate to the forum index or any topic detail page.
+3.  Usernames of topic creators and post authors should now be clickable links.
+4.  Click on a username. You should be taken to their profile page (e.g., `/forum/profile/someuser/`).
+5.  The profile page should display their username, join date, and lists of their topics and recent posts.
+6.  Check if the links from the profile page (to topics and specific posts) work correctly.
+
+You now have basic user profile pages\! This adds another layer of community and context to your forum.
+
+Future enhancements could include:
+
+  * Allowing users to edit their own profiles (adding a bio, avatar, etc., which would likely require creating a separate `Profile` model).
+  * More advanced display of user activity.
+  * Private profiles or privacy settings.
+
+What would you like to work on next?
+
+
+#####

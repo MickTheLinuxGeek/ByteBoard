@@ -24,4 +24,7 @@ urlpatterns = [
 
     # Add this line for deleting posts
     path('post/<int:post_id>/delete/', views.delete_post, name='delete_post'),
+
+    # Add this line for user profiles
+    path('profile/<str:username>/', views.user_profile, name='user_profile'),
 ]

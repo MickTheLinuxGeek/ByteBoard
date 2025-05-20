@@ -16,8 +16,9 @@ from django.contrib.auth import login  # Import the login function
 # Import pagination classes
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+# We might need User model later:
+from django.contrib.auth.models import User
 
-# We might need User model later: from django.contrib.auth.models import User
 
 # View to display the list of all topics
 def forum_index(request):
@@ -227,3 +228,22 @@ def delete_post(request, post_id):
             'topic': post.topic,  # For cancel link and context
         }
         return render(request, 'forum/delete_post_confirm.html', context)
+
+
+def user_profile(request, username):
+    # Get the User object for the requested username, or raise a 404 if not found
+    profile_user = get_object_or_404(User, username=username)
+
+    # Get topics created by this user, ordered by most recent
+    user_topics = Topic.objects.filter(created_by=profile_user).order_by('-created_at')
+
+    # Get posts created by this user, ordered by most recent
+    # For performance, you might want to limit this, e.g., user_posts.all()[:20]
+    user_posts = Post.objects.filter(created_by=profile_user).order_by('-created_at')
+
+    context = {
+        'profile_user': profile_user,
+        'user_topics': user_topics,
+        'user_posts': user_posts,
+    }
+    return render(request, 'forum/user_profile.html', context)

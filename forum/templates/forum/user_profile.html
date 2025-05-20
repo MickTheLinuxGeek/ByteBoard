@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<h2>{{ profile_user.username }}'s Profile</h2>
+<hr>
+
+<div class="profile-info">
+    <p><strong>Username:</strong> {{ profile_user.username }}</p>
+    <p><strong>Date Joined:</strong> {{ profile_user.date_joined|date:"F d, Y" }}</p>
+    <p><strong>Total Topics Started:</strong> {{ user_topics.count }}</p>
+    <p><strong>Total Posts Made:</strong> {{ user_posts.count }}</p>
+    {# Add link to edit profile if viewing own profile - for a future step #}
+    {% if user == profile_user %}
+    {# <p><a href="{% url 'edit_profile' %}">Edit Profile</a></p> #}
+    {% endif %}
+</div>
+<hr>
+
+<div class="user-activity">
+    <h3>Topics Started by {{ profile_user.username }}</h3>
+    {% if user_topics %}
+    <ul class="topic-list">
+        {% for topic in user_topics %}
+        <li>
+            <a href="{% url 'forum:topic_detail' topic.id %}">{{ topic.subject }}</a>
+            <small>on {{ topic.created_at|date:"M d, Y P" }}</small>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>{{ profile_user.username }} has not started any topics yet.</p>
+    {% endif %}
+
+    <h3 style="margin-top: 30px;">Recent Posts by {{ profile_user.username }}</h3>
+    {% if user_posts %}
+    <ul class="post-list" style="list-style: none; padding: 0;">
+        {% for post in user_posts|slice:":15" %} {# Display up to 15 recent posts #}
+        <li class="post" style="margin-bottom:10px; background-color: #f9f9f9; padding:10px; border-radius:5px;">
+            <p>
+                In topic <a href="{% url 'forum:topic_detail' post.topic.id %}#post-{{ post.id }}">
+                <strong>{{ post.topic.subject }}</strong></a>
+                <small>on {{ post.created_at|date:"M d, Y P" }}</small>
+            </p>
+            <p>{{ post.message|truncatewords_html:30|linebreaksbr }}</p>
+        </li>
+        {% endfor %}
+        {% if user_posts.count > 15 %}
+        <p><em>... and more.</em></p>
+        {% endif %}
+    </ul>
+    {% else %}
+    <p>{{ profile_user.username }} has not made any posts yet.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -19,7 +19,7 @@
             {{ topic.subject }}
         </a>
         <small>
-            by {{ topic.created_by.username }}
+            by <a href="{% url 'forum:user_profile' topic.created_by.username %}">{{ topic.created_by.username }}</a>
             on {{ topic.created_at|date:"M d, Y H:i" }}
             ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
         </small>
