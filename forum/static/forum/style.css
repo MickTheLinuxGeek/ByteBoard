@@ -170,25 +170,41 @@ form button[type="submit"]:hover {
 }
 
 .pagination .step-links a,
-.pagination .current {
-    padding: 5px 10px;
-    margin: 0 2px;
+.pagination .current,
+.pagination .ellipsis,
+.pagination .disabled { /* Style for disabled links */
+    padding: 8px 12px; /* Slightly increased padding */
+    margin: 0 3px; /* Slightly increased margin */
     border: 1px solid #ddd;
     text-decoration: none;
     color: #0779e4;
-    border-radius: 3px;
+    border-radius: 4px; /* Slightly more rounded */
+    display: inline-block; /* Ensures proper spacing and padding */
 }
 
 .pagination .current {
     background: #0779e4;
     color: #fff;
     border-color: #0779e4;
+    font-weight: bold; /* Make current page bold */
 }
 
 .pagination a:hover {
-    background-color: #f0f0f0;
+    background-color: #e9ecef; /* Lighter hover for better contrast */
+    border-color: #ccc;
 }
 
+.pagination .ellipsis {
+    border: none; /* No border for ellipsis */
+    padding: 8px 5px; /* Adjust padding for ellipsis */
+    color: #6c757d; /* Muted color for ellipsis */
+}
+
+.pagination .disabled { /* Styling for disabled links */
+    color: #aaa;
+    border-color: #eee;
+    pointer-events: none; /* Makes them unclickable */
+}
 
 footer {
     text-align: center;

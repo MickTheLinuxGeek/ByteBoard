@@ -28,23 +28,43 @@
 </ul>
 
 {# Pagination Links #}
+{% if topics_page.paginator.num_pages > 1 %} {# Only show pagination if there's more than one page #}
 <div class="pagination">
             <span class="step-links">
+                {# Previous Button #}
                 {% if topics_page.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ topics_page.previous_page_number }}">previous</a>
+                    <a href="?page=1" title="First Page">&laquo; first</a>
+                    <a href="?page={{ topics_page.previous_page_number }}" title="Previous Page">previous</a>
+                {% else %}
+                    <span class="disabled">&laquo; first</span>
+                    <span class="disabled">previous</span>
                 {% endif %}
 
-                <span class="current">
-                    Page {{ topics_page.number }} of {{ topics_page.paginator.num_pages }}.
-                </span>
+                {# Elided Page Numbers #}
+                {% for i in elided_page_range %}
+                    {% if i == PAGINATOR_ELLIPSIS %}
+                        <span class="ellipsis">{{ i }}</span>
+                    {% elif i == topics_page.number %}
+                        <span class="current">{{ i }}</span>
+                    {% else %}
+                        <a href="?page={{ i }}">{{ i }}</a>
+                    {% endif %}
+                {% endfor %}
 
+                {# Next Button #}
                 {% if topics_page.has_next %}
-                    <a href="?page={{ topics_page.next_page_number }}">next</a>
-                    <a href="?page={{ topics_page.paginator.num_pages }}">last &raquo;</a>
+                    <a href="?page={{ topics_page.next_page_number }}" title="Next Page">next</a>
+                    <a href="?page={{ topics_page.paginator.num_pages }}" title="Last Page">last &raquo;</a>
+                {% else %}
+                    <span class="disabled">next</span>
+                    <span class="disabled">last &raquo;</span>
                 {% endif %}
             </span>
 </div>
+<p style="text-align: center; margin-top: 5px;">
+    <small>Page {{ topics_page.number }} of {{ topics_page.paginator.num_pages }}.</small>
+</p>
+{% endif %}
 
 {% else %}
 <p>No topics have been created yet.</p>

@@ -26,7 +26,7 @@ def forum_index(request):
     all_topics_list = Topic.objects.order_by('-created_at').all()
 
     # Set the number of topics per page
-    topics_per_page = 10  # You can adjust this number
+    topics_per_page = 5  # You can adjust this number
 
     # Create a Paginator object
     paginator = Paginator(all_topics_list, topics_per_page)
@@ -44,10 +44,22 @@ def forum_index(request):
         # If page is out of range (e.g., 9999), deliver last page of results.
         topics_page = paginator.page(paginator.num_pages)
 
+    # Generate the elided page range
+    # Shows 2 pages on each side of the current page, and 1 page at the beginning/end.
+    # Example: 1 ... 4 5 6 ... 10 (if current page is 5)
+    # Paginator.ELLIPSIS will be used for the '...' parts.
+    elided_page_range = paginator.get_elided_page_range(
+        number=topics_page.number,
+        on_each_side=2,  # How many pages around the current page
+        on_ends=1  # How many pages at the start and end
+    )
+
     # Prepare the context dictionary to pass data to the template
     # We pass the 'Page' object, not the full list of topics
     context = {
         'topics_page': topics_page,
+        'elided_page_range': elided_page_range,  # Add this to the context
+        'PAGINATOR_ELLIPSIS': paginator.ELLIPSIS,  # Pass the ELLIPSIS object for comparison in template
     }
 
     # Render the template 'forum/forum_index.html' with the context data
