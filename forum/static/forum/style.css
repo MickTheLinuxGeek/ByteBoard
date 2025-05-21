@@ -206,6 +206,21 @@ form button[type="submit"]:hover {
     pointer-events: none; /* Makes them unclickable */
 }
 
+.sticky-topics-section {
+    margin-bottom: 20px;
+}
+
+.sticky-topic {
+    background-color: #fffbef !important; /* Light yellow background for sticky */
+    border-left: 4px solid #ffc107 !important; /* Yellow left border */
+}
+
+.sticky-indicator {
+    margin-right: 8px;
+    font-size: 1.1em;
+    color: #ffc107; /* Color for the pin emoji or icon if not an image */
+}
+
 footer {
     text-align: center;
     padding: 20px;

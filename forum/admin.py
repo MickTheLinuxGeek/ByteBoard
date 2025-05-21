@@ -10,18 +10,15 @@ from .models import Topic, Post  # Import your models
 # admin.site.register(Post)
 
 # Customized Admin Interface for Topic model
-@admin.register(Topic)  # Use decorator to register the model with its admin class
+
+@admin.register(Topic)
 class TopicAdmin(admin.ModelAdmin):
-    # Columns to display in the list view
-    list_display = ('subject', 'created_by', 'created_at')
-    # Fields to allow searching by
-    search_fields = ('subject', 'created_by__username')  # Search related User's username
-    # Filters to add in the sidebar
-    list_filter = ('created_at', 'created_by')
-    # Add a date hierarchy navigation
+    list_display = ('subject', 'created_by', 'created_at', 'is_sticky')  # Add 'is_sticky'
+    search_fields = ('subject', 'created_by__username')
+    list_filter = ('created_at', 'created_by', 'is_sticky')  # Add 'is_sticky'
     date_hierarchy = 'created_at'
-    # Default ordering
-    ordering = ('-created_at',)
+    ordering = ('-is_sticky', '-created_at',)  # Order by sticky status first, then by date
+    list_editable = ('is_sticky',)  # Allow editing sticky status directly in the list view
 
 
 # Customized Admin Interface for Post model

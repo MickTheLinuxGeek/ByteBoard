@@ -11,6 +11,7 @@ class Topic(models.Model):
     subject = models.CharField(max_length=255)
     created_by = models.ForeignKey(User, related_name='topics', on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+    is_sticky = models.BooleanField(default=False)  # Add this line for sticky topics
 
     # We might add a 'last_updated' field later if needed
 

@@ -2777,3 +2777,322 @@ What area of the forum would you like to focus on next?
 
 
 ####
+Okay, implementing "sticky topics" is a common and useful feature for forums. Sticky topics always appear at the top of the topic list, regardless of their last activity, making them ideal for announcements or important discussions.
+
+Here's how we can add this functionality:
+
+**Step 16: Implement Sticky Topics**
+
+**1. Update `Topic` Model (`forum/models.py`)**
+
+We need to add a field to our `Topic` model to mark a topic as sticky.
+
+  * Open `forum/models.py`.
+  * Add a new boolean field `is_sticky` to the `Topic` model:
+
+<!-- end list -->
+
+```python
+# forum/models.py
+
+from django.db import models
+from django.contrib.auth.models import User
+from django.utils import timezone
+
+class Topic(models.Model):
+    subject = models.CharField(max_length=255)
+    created_by = models.ForeignKey(User, related_name='topics', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_sticky = models.BooleanField(default=False) # Add this line for sticky topics
+
+    def __str__(self):
+        return self.subject
+
+# Post model (no changes needed for this step)
+class Post(models.Model):
+    message = models.TextField()
+    topic = models.ForeignKey(Topic, related_name='posts', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, related_name='posts_created', on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.message[:50] + ('...' if len(self.message) > 50 else '')
+```
+
+**Make and Apply Migrations:**
+Since we've modified the `Topic` model, run the migration commands in your terminal:
+
+```bash
+python manage.py makemigrations forum
+python manage.py migrate
+```
+
+This will add the `is_sticky` column to your `forum_topic` database table (defaulting to `False`).
+
+**2. Update `forum_index` View (`forum/views.py`)**
+
+Now, we need to adjust the `forum_index` view to fetch sticky topics separately and then paginate only the regular (non-sticky) topics.
+
+  * Open `forum/views.py` and modify the `forum_index` function:
+
+<!-- end list -->
+
+```python
+# forum/views.py
+
+from django.shortcuts import render
+from .models import Topic # Post is already imported if needed by other views
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+# View to display the list of all topics with sticky topics at the top
+def forum_index(request):
+    # Get sticky topics, ordered by creation date (or another preferred field)
+    sticky_topics = Topic.objects.filter(is_sticky=True).order_by('-created_at')
+
+    # Get regular (non-sticky) topics for pagination
+    regular_topics_list = Topic.objects.filter(is_sticky=False).order_by('-created_at')
+
+    topics_per_page = 10  # Number of regular topics per page
+    paginator = Paginator(regular_topics_list, topics_per_page)
+    page_number = request.GET.get('page')
+
+    try:
+        regular_topics_page = paginator.page(page_number)
+    except PageNotAnInteger:
+        regular_topics_page = paginator.page(1)
+    except EmptyPage:
+        regular_topics_page = paginator.page(paginator.num_pages)
+
+    # Generate the elided page range for the regular topics
+    elided_page_range = paginator.get_elided_page_range(
+        number=regular_topics_page.number,
+        on_each_side=2,
+        on_ends=1
+    )
+
+    context = {
+        'sticky_topics': sticky_topics,              # Pass sticky topics
+        'regular_topics_page': regular_topics_page,  # Pass paginated regular topics
+        'elided_page_range': elided_page_range,
+        'PAGINATOR_ELLIPSIS': paginator.ELLIPSIS,
+    }
+    return render(request, 'forum/forum_index.html', context)
+
+# ... (rest of your views) ...
+```
+
+**Explanation of View Changes:**
+
+  * **`sticky_topics = Topic.objects.filter(is_sticky=True).order_by('-created_at')`**: Fetches all topics marked as `is_sticky=True`. They are ordered by creation date; you could change this ordering if desired (e.g., by a last post date if you add such a field).
+  * **`regular_topics_list = Topic.objects.filter(is_sticky=False).order_by('-created_at')`**: Fetches all non-sticky topics.
+  * **Pagination:** The `Paginator` is now initialized with `regular_topics_list`. This means only the non-sticky topics will be paginated.
+  * **Context Update:**
+      * `'sticky_topics'`: Contains the queryset of all sticky topics.
+      * `'regular_topics_page'`: Contains the `Page` object for the current page of *regular* topics (this replaces the old `topics_page`).
+
+**3. Update `forum_index.html` Template (`forum/templates/forum/forum_index.html`)**
+
+The template needs to be updated to display sticky topics first, then the paginated regular topics.
+
+  * Open `forum/templates/forum/forum_index.html`:
+
+<!-- end list -->
+
+```html
+{% extends 'base.html' %}
+
+{% block title %}Forum Topics{% endblock %}
+
+{% block content %}
+    <h2>Forum Topics</h2>
+
+    <p>
+        <a href="{% url 'forum:new_topic' %}">Start a New Topic</a>
+    </p>
+
+    {# Display Sticky Topics #}
+    {% if sticky_topics %}
+        <div class="sticky-topics-section topic-list">
+            {# You could add a heading like <h3>Pinned Discussions</h3> #}
+            <ul>
+                {% for topic in sticky_topics %}
+                    <li class="sticky-topic"> {# Add a class for styling sticky topics #}
+                        <span class="sticky-indicator" title="Sticky Topic">📌</span> {# Emoji or Icon #}
+                        <a href="{% url 'forum:topic_detail' topic.id %}">
+                            {{ topic.subject }}
+                        </a>
+                        <small>
+                            by <a href="{% url 'forum:user_profile' topic.created_by.username %}">{{ topic.created_by.username }}</a>
+                            on {{ topic.created_at|date:"M d, Y H:i" }}
+                            ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
+                        </small>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% if regular_topics_page.object_list %}<hr style="margin: 20px 0;">{% endif %} {# Separator if regular topics follow #}
+    {% endif %}
+
+
+    {# Display Regular (Paginated) Topics #}
+    {% if regular_topics_page.object_list %}
+        <div class="regular-topics-section topic-list">
+            <ul>
+                {% for topic in regular_topics_page %} {# Iterate over paginated regular topics #}
+                    <li>
+                        <a href="{% url 'forum:topic_detail' topic.id %}">
+                            {{ topic.subject }}
+                        </a>
+                        <small>
+                            by <a href="{% url 'forum:user_profile' topic.created_by.username %}">{{ topic.created_by.username }}</a>
+                            on {{ topic.created_at|date:"M d, Y H:i" }}
+                            ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
+                        </small>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {# Pagination Links (applies to regular_topics_page) #}
+        {% if regular_topics_page.paginator.num_pages > 1 %}
+        <div class="pagination">
+            <span class="step-links">
+                {% if regular_topics_page.has_previous %}
+                    <a href="?page=1" title="First Page">&laquo; first</a>
+                    <a href="?page={{ regular_topics_page.previous_page_number }}" title="Previous Page">previous</a>
+                {% else %}
+                    <span class="disabled">&laquo; first</span>
+                    <span class="disabled">previous</span>
+                {% endif %}
+
+                {% for i in elided_page_range %}
+                    {% if i == PAGINATOR_ELLIPSIS %}
+                        <span class="ellipsis">{{ i }}</span>
+                    {% elif i == regular_topics_page.number %}
+                        <span class="current">{{ i }}</span>
+                    {% else %}
+                        <a href="?page={{ i }}">{{ i }}</a>
+                    {% endif %}
+                {% endfor %}
+
+                {% if regular_topics_page.has_next %}
+                    <a href="?page={{ regular_topics_page.next_page_number }}" title="Next Page">next</a>
+                    <a href="?page={{ regular_topics_page.paginator.num_pages }}" title="Last Page">last &raquo;</a>
+                {% else %}
+                    <span class="disabled">next</span>
+                    <span class="disabled">last &raquo;</span>
+                {% endif %}
+            </span>
+        </div>
+        <p style="text-align: center; margin-top: 5px;">
+            <small>Page {{ regular_topics_page.number }} of {{ regular_topics_page.paginator.num_pages }} (regular topics).</small>
+        </p>
+        {% endif %}
+
+    {% elif not sticky_topics %} {# Only show this if there are no sticky AND no regular topics #}
+        <p>No topics have been created yet.</p>
+    {% endif %}
+
+{% endblock %}
+```
+
+**Explanation of Template Changes:**
+
+  * **Sticky Topics Section:**
+      * `{% if sticky_topics %}`: Checks if there are any sticky topics.
+      * A loop iterates through `sticky_topics` and displays them.
+      * `<li class="sticky-topic">`: A class is added for specific styling.
+      * `<span class="sticky-indicator" title="Sticky Topic">📌</span>`: An emoji (or you could use an icon font/image) to visually mark sticky topics.
+  * **Regular Topics Section:**
+      * `{% if regular_topics_page.object_list %}`: Checks if the current page of regular topics has any items.
+      * The loop now iterates through `regular_topics_page`.
+  * **Pagination Links:** All references to `topics_page` in the pagination block have been changed to `regular_topics_page`. The pagination logic now correctly applies only to the non-sticky topics.
+  * **"No topics" message:** Adjusted to only show if there are neither sticky nor regular topics.
+
+**4. Update Admin Interface (`forum/admin.py`)**
+
+Make it easier to manage the `is_sticky` status from the Django admin.
+
+  * Open `forum/admin.py` and modify `TopicAdmin`:
+
+<!-- end list -->
+
+```python
+# forum/admin.py
+
+from django.contrib import admin
+from .models import Topic, Post
+
+@admin.register(Topic)
+class TopicAdmin(admin.ModelAdmin):
+    list_display = ('subject', 'created_by', 'created_at', 'is_sticky') # Add 'is_sticky'
+    search_fields = ('subject', 'created_by__username')
+    list_filter = ('created_at', 'created_by', 'is_sticky') # Add 'is_sticky'
+    date_hierarchy = 'created_at'
+    ordering = ('-is_sticky', '-created_at',) # Order by sticky status first, then by date
+    list_editable = ('is_sticky',) # Allow editing sticky status directly in the list view
+
+# PostAdmin (no changes needed for this step)
+@admin.register(Post)
+class PostAdmin(admin.ModelAdmin):
+    # ... (as before) ...
+    list_display = ('__str__', 'topic', 'created_by', 'created_at')
+    search_fields = ('message', 'topic__subject', 'created_by__username')
+    list_filter = ('created_at', 'created_by', 'topic')
+    date_hierarchy = 'created_at'
+    raw_id_fields = ('topic', 'created_by')
+    ordering = ('-created_at',)
+```
+
+**Explanation of Admin Changes:**
+
+  * `list_display = (..., 'is_sticky')`: Shows the sticky status as a column in the topic list.
+  * `list_filter = (..., 'is_sticky')`: Adds a filter in the sidebar to quickly see "All", "Yes" (sticky), or "No" (not sticky) topics.
+  * `ordering = ('-is_sticky', '-created_at',)`: This makes sticky topics appear first in the admin list as well.
+  * `list_editable = ('is_sticky',)`: This is very convenient; it allows you to toggle the `is_sticky` checkbox directly from the admin list view without going into the detail page of each topic.
+
+**5. Add CSS for Sticky Topics (`forum/static/forum/style.css`)**
+
+  * Open `forum/static/forum/style.css` and add some styles:
+
+<!-- end list -->
+
+```css
+/* forum/static/forum/style.css */
+
+/* ... (previous CSS rules) ... */
+
+.sticky-topics-section {
+    margin-bottom: 20px;
+}
+
+.sticky-topic {
+    background-color: #fffbef !important; /* Light yellow background for sticky */
+    border-left: 4px solid #ffc107 !important; /* Yellow left border */
+}
+
+.sticky-indicator {
+    margin-right: 8px;
+    font-size: 1.1em;
+    color: #ffc107; /* Color for the pin emoji or icon if not an image */
+}
+```
+
+**6. Test Sticky Topics Functionality**
+
+1.  Ensure your server is running.
+2.  Go to the Django Admin (`/admin/`) -\> Forum -\> Topics.
+3.  You should see the `Is sticky` column and filter. Mark a few topics as sticky. You can also use the `list_editable` feature to toggle them quickly.
+4.  Navigate to your forum index page (`/forum/`).
+5.  The topics you marked as sticky should appear at the very top of the list, possibly with the pin icon and different styling.
+6.  Regular topics should appear below the sticky ones.
+7.  Test the pagination. It should only apply to the regular topics. Sticky topics should remain at the top regardless of which page of regular topics you are viewing.
+8.  Verify the ordering of sticky topics among themselves (they should be ordered by creation date, newest first, as per our view logic).
+
+You now have sticky topics implemented\! This is a key feature for highlighting important discussions.
+
+What would you like to work on next?
+
+
+#####

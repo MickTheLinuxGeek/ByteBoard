@@ -20,49 +20,38 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
 
 
-# View to display the list of all topics
+# View to display the list of all topics with sticky topics at the top
 def forum_index(request):
-    # Query the database to get all Topic objects
-    all_topics_list = Topic.objects.order_by('-created_at').all()
+    # Get sticky topics, ordered by creation date (or another preferred field)
+    sticky_topics = Topic.objects.filter(is_sticky=True).order_by('-created_at')
 
-    # Set the number of topics per page
-    topics_per_page = 5  # You can adjust this number
+    # Get regular (non-sticky) topics for pagination
+    regular_topics_list = Topic.objects.filter(is_sticky=False).order_by('-created_at')
 
-    # Create a Paginator object
-    paginator = Paginator(all_topics_list, topics_per_page)
-
-    # Get the current page number from the GET request (e.g., ?page=2)
+    topics_per_page = 5  # Number of regular topics per page
+    paginator = Paginator(regular_topics_list, topics_per_page)
     page_number = request.GET.get('page')
 
     try:
-        # Get the Page object for the requested page number
-        topics_page = paginator.page(page_number)
+        regular_topics_page = paginator.page(page_number)
     except PageNotAnInteger:
-        # If page is not an integer, deliver first page.
-        topics_page = paginator.page(1)
+        regular_topics_page = paginator.page(1)
     except EmptyPage:
-        # If page is out of range (e.g., 9999), deliver last page of results.
-        topics_page = paginator.page(paginator.num_pages)
+        regular_topics_page = paginator.page(paginator.num_pages)
 
-    # Generate the elided page range
-    # Shows 2 pages on each side of the current page, and 1 page at the beginning/end.
-    # Example: 1 ... 4 5 6 ... 10 (if current page is 5)
-    # Paginator.ELLIPSIS will be used for the '...' parts.
+    # Generate the elided page range for the regular topics
     elided_page_range = paginator.get_elided_page_range(
-        number=topics_page.number,
-        on_each_side=2,  # How many pages around the current page
-        on_ends=1  # How many pages at the start and end
+        number=regular_topics_page.number,
+        on_each_side=2,
+        on_ends=1
     )
 
-    # Prepare the context dictionary to pass data to the template
-    # We pass the 'Page' object, not the full list of topics
     context = {
-        'topics_page': topics_page,
-        'elided_page_range': elided_page_range,  # Add this to the context
-        'PAGINATOR_ELLIPSIS': paginator.ELLIPSIS,  # Pass the ELLIPSIS object for comparison in template
+        'sticky_topics': sticky_topics,  # Pass sticky topics
+        'regular_topics_page': regular_topics_page,  # Pass paginated regular topics
+        'elided_page_range': elided_page_range,
+        'PAGINATOR_ELLIPSIS': paginator.ELLIPSIS,
     }
-
-    # Render the template 'forum/forum_index.html' with the context data
     return render(request, 'forum/forum_index.html', context)
 
 
