@@ -11,15 +11,15 @@ class NewTopicForm(forms.Form):
     subject = forms.CharField(
         max_length=255,
         required=True,
-        label='Subject',  # Label displayed in the form
-        widget=forms.TextInput(attrs={'placeholder': 'Enter the topic subject'})  # Customize input appearance
+        label="Subject",  # Label displayed in the form
+        widget=forms.TextInput(attrs={"placeholder": "Enter the topic subject"}),  # Customize input appearance
     )
     message = forms.CharField(
         required=True,
-        label='Message',
+        label="Message",
         widget=forms.Textarea(
-            attrs={'rows': 5, 'placeholder': 'Write the first post for this topic'}
-        )  # Use a textarea for longer messages
+            attrs={"rows": 5, "placeholder": "Write the first post for this topic"},
+        ),  # Use a textarea for longer messages
     )
 
 
@@ -27,8 +27,8 @@ class NewTopicForm(forms.Form):
 class NewPostForm(forms.Form):
     message = forms.CharField(
         required=True,
-        label='Your Reply',
+        label="Your Reply",
         widget=forms.Textarea(
-            attrs={'rows': 5, 'placeholder': 'Write your reply'}
-        )
+            attrs={"rows": 5, "placeholder": "Write your reply"},
+        ),
     )

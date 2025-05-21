@@ -3,6 +3,7 @@ URL configuration for forum_project project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
+
 Examples:
 Function views
     1. Add an import:  from my_app import views
@@ -13,21 +14,24 @@ Class-based views
 Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+
 """
 from django.contrib import admin
+
 # Import include
-from django.urls import path, include
+from django.urls import include, path
+
 from forum import views as forum_views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     # Add this line: directs URLs starting with 'forum/' to the forum app's urls.py
-    path('forum/', include('forum.urls')),
+    path("forum/", include("forum.urls")),
     # Add the signup URL
-    path('accounts/signup/', forum_views.signup, name='signup'),  # Map to our new view
+    path("accounts/signup/", forum_views.signup, name="signup"),  # Map to our new view
     # We could add a path for the homepage later if needed
     # path('', some_view_for_homepage, name='home'),
     # Add this line to include Django's built-in authentication URLs
     # under the '/accounts/' path (e.g., /accounts/login/, /accounts/logout/)
-    path('accounts/', include('django.contrib.auth.urls')),
+    path("accounts/", include("django.contrib.auth.urls")),
 ]

@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}My Forum{% endblock %}</title>
-    {# Link to your CSS file #}
-    {% load static %} {# Add this line at the very top #}
-    <link rel="stylesheet" type="text/css" href="{% static 'forum/style.css' %}">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'forum/style.css' %}">
 </head>
 <body>
 <div class="container"> {# Wrap content in a container for better centering/width control #}

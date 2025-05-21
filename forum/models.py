@@ -1,15 +1,14 @@
 # forum/models.py
 
-from django.db import models
 from django.contrib.auth.models import User  # Import Django's built-in User model
-from django.utils import timezone
+from django.db import models
 
 
 # Create your models here.
 # Model for a discussion topic/thread
 class Topic(models.Model):
     subject = models.CharField(max_length=255)
-    created_by = models.ForeignKey(User, related_name='topics', on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, related_name="topics", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     is_sticky = models.BooleanField(default=False)  # Add this line for sticky topics
 
@@ -23,8 +22,8 @@ class Topic(models.Model):
 # Model for a post/reply within a topic
 class Post(models.Model):
     message = models.TextField()
-    topic = models.ForeignKey(Topic, related_name='posts', on_delete=models.CASCADE)
-    created_by = models.ForeignKey(User, related_name='posts_created', on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, related_name="posts", on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, related_name="posts_created", on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(null=True, blank=True)  # Field to store last update time
 
@@ -33,4 +32,4 @@ class Post(models.Model):
     # This provides a readable representation of the Post object
     def __str__(self):
         # Show first 50 characters of the message
-        return self.message[:50] + ('...' if len(self.message) > 50 else '')
+        return self.message[:50] + ("..." if len(self.message) > 50 else "")
