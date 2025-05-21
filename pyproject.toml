@@ -15,3 +15,8 @@ line-length = 120
 [tool.ruff.format]
 quote-style = "single"
 indent-style = "space"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.5",
+]
