@@ -11,3 +11,6 @@ wheels/
 
 # Database files
 db.sqlite3
+
+# Idea
+.idea
