@@ -1,6 +1,7 @@
 # MyForum Project
 
-A feature-rich forum application built with Python and Django, allowing users to create discussion topics, post messages, and interact with other users.
+A feature-rich forum application built with Python and Django, allowing users to create discussion topics, post
+messages, and interact with other users.
 
 ## Features
 
@@ -102,13 +103,14 @@ myforum_project/
 ## Development
 
 To run tests:
+
 ```
 pytest
 ```
 
 ## License
 
-[Specify your license here]
+[MIT License (c) Michael Biel](https://github.com/MickTheLinuxGeek/ByteBoard/blob/8e83d59ee7a1f2eff7b652ea2f5ae456f1f4b449/LICENSE)
 
 ## Contributing
 
