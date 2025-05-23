@@ -110,7 +110,7 @@ pytest
 
 ## License
 
-[MIT License (c) Michael Biel](https://github.com/MickTheLinuxGeek/ByteBoard/blob/8e83d59ee7a1f2eff7b652ea2f5ae456f1f4b449/LICENSE)
+[GNU GPL V3 (c) Michael Biel](https://github.com/MickTheLinuxGeek/ByteBoard/blob/51c381e2b461d087feb12645140b1d2789cfe78c/LICENSE)
 
 ## Contributing
 
