@@ -30,7 +30,7 @@ urlpatterns = [
     # Add the signup URL
     path("accounts/signup/", forum_views.signup, name="signup"),  # Map to our new view
     # We could add a path for the homepage later if needed
-    # path('', some_view_for_homepage, name='home'),
+    path("", forum_views.forum_index, name="home"),
     # Add this line to include Django's built-in authentication URLs
     # under the '/accounts/' path (e.g., /accounts/login/, /accounts/logout/)
     path("accounts/", include("django.contrib.auth.urls")),
