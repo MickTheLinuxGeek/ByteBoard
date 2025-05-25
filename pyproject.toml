@@ -1,5 +1,5 @@
 [project]
-name = "myforum-project"
+name = "ByteBoard-Forums"
 version = "0.1.0"
 description = "A forum application build with Python & Django"
 readme = "README.md"

@@ -1,4 +1,4 @@
-# MyForum Project
+# ByteBoard Forums Project
 
 A feature-rich forum application built with Python and Django, allowing users to create discussion topics, post
 messages, and interact with other users.
