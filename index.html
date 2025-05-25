@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Forum Project</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body> <header>
+    <div class="container">
+        <h1>My Django Forum Application</h1>
+        <p class="subtitle">A feature-rich forum built with Python and Django.</p>
+    </div>
+</header>
+
+<nav>
+    <div class="container">
+        <a href="#about">About</a>
+        <a href="#features">Features</a>
+        <a href="#screenshots">Screenshots</a>
+        <a href="#tech-stack">Tech Stack</a>
+        <a href="#links">Links</a>
+        <button id="theme-toggle" class="theme-toggle-button">🌙</button> </div>
+</nav>
+
+<section id="about" class="container content-section">
+    <h2><span class="icon">ℹ️</span> About This Project</h2>
+    <p>
+        This is a forum application developed using the Django web framework.
+        It allows users to register, create discussion topics, post replies,
+        edit and delete their content, view user profiles, and more.
+        The project demonstrates various core concepts of Django development.
+    </p>
+</section>
+
+<section id="features" class="container content-section">
+    <h2><span class="icon">⭐</span> Key Features</h2>
+    <ul>
+        <li>User registration and authentication (Login/Logout)</li>
+        <li>Create, view, and reply to forum topics</li>
+        <li>Edit and delete own posts</li>
+        <li>User profiles displaying activity (topics/posts)</li>
+        <li>Sticky topics to highlight important discussions</li>
+        <li>Pagination for topic lists</li>
+        <li>Basic CSS styling for a clean interface</li>
+        <li>Django Admin integration for content management</li>
+        <li>Dark/Light mode theme</li> </ul>
+</section>
+
+<section id="screenshots" class="container content-section">
+    <h2><span class="icon">🖼️</span> Screenshots</h2>
+    <p><em>(Here you would add images of your application)</em></p>
+    <div class="screenshot-gallery">
+        <p>To add screenshots:</p>
+        <ol>
+            <li>Take screenshots of your running Django application.</li>
+            <li>Create an 'images' folder in this 'gh-pages' branch.</li>
+            <li>Place your screenshot images into the 'images' folder.</li>
+            <li>Uncomment and update img tags: <code>&lt;img src="images/your-image-name.png" alt="Descriptive alt text"&gt;</code></li>
+        </ol>
+    </div>
+</section>
+
+<section id="tech-stack" class="container content-section">
+    <h2><span class="icon">🛠️</span> Technology Stack</h2>
+    <ul>
+        <li>Python</li>
+        <li>Django Web Framework</li>
+        <li>HTML5</li>
+        <li>CSS3</li>
+        <li>JavaScript (for theme toggle)</li> <li>SQLite (for development database)</li>
+    </ul>
+</section>
+
+<section id="links" class="container content-section">
+    <h2><span class="icon">🔗</span> Links</h2>
+    <ul>
+        <li>
+            <strong>GitHub Repository:</strong>
+            <a href="https://github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME" target="_blank" rel="noopener noreferrer">
+                github.com/YOUR_USERNAME/YOUR_REPOSITORY_NAME
+            </a>
+            (Replace with your actual GitHub repo link)
+        </li>
+        <li>
+            <strong>Live Demo (Hypothetical):</strong>
+            <p><em>If this project were deployed on a Python-compatible hosting service, the link would go here. GitHub Pages hosts this static project information page, not the live Django app.</em></p>
+        </li>
+    </ul>
+</section>
+
+<footer>
+    <div class="container">
+        <p>&copy; <span id="current-year"></span> Your Name / Project Name. Page generated manually.</p>
+    </div>
+</footer>
+
+<script>
+    // Simple JS to set the current year in the footer
+    document.getElementById('current-year').textContent = new Date().getFullYear();
+
+    // Theme Toggle JavaScript
+    const themeToggle = document.getElementById('theme-toggle');
+    const body = document.body; // Or document.documentElement if you prefer to set class on <html>
+
+    // Function to set theme and save preference
+    function setTheme(theme) {
+        if (theme === 'dark') {
+            body.classList.add('dark-mode');
+            themeToggle.textContent = '☀️'; // Sun icon for light mode
+            localStorage.setItem('theme', 'dark');
+        } else {
+            body.classList.remove('dark-mode');
+            themeToggle.textContent = '🌙'; // Moon icon for dark mode
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    // Event listener for the toggle button
+    themeToggle.addEventListener('click', () => {
+        if (body.classList.contains('dark-mode')) {
+            setTheme('light');
+        } else {
+            setTheme('dark');
+        }
+    });
+
+    // Apply theme on initial load
+    document.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        if (savedTheme) {
+            setTheme(savedTheme);
+        } else if (prefersDark) {
+            setTheme('dark');
+        } else {
+            setTheme('light'); // Default to light if no preference or saved theme
+        }
+    });
+</script>
+</body>
+</html>

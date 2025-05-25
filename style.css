@@ -1,0 +1,206 @@
+/* Define CSS variables for light theme (default) */
+:root {
+    --bg-color: #f8f9fa;
+    --text-color: #343a40;
+    --header-bg-color: #343a40;
+    --header-text-color: #fff;
+    --header-subtitle-color: #adb5bd;
+    --nav-bg-color: #495057;
+    --nav-text-color: #f8f9fa;
+    --nav-hover-text-color: #ced4da;
+    --link-color: #007bff;
+    --link-hover-color: #0056b3; /* Define a hover color for links */
+    --section-border-color: #e9ecef;
+    --list-item-bg-color: #fff;
+    --list-item-border-color: #dee2e6;
+    --footer-bg-color: #e9ecef;
+    --footer-text-color: #6c757d;
+    --h2-icon-color: var(--link-color); /* Use link color for icons by default */
+    --button-bg-color: var(--link-color);
+    --button-text-color: #fff;
+    --theme-toggle-bg: #6c757d;
+    --theme-toggle-text: #fff;
+}
+
+/* Define CSS variables for dark theme */
+body.dark-mode { /* Or html.dark-mode if you prefer */
+    --bg-color: #1a1a1a; /* Darker background */
+    --text-color: #e0e0e0; /* Lighter text */
+    --header-bg-color: #000000; /* Pitch black header */
+    --header-text-color: #f5f5f5;
+    --header-subtitle-color: #999999;
+    --nav-bg-color: #1c1c1c; /* Darker nav */
+    --nav-text-color: #e0e0e0;
+    --nav-hover-text-color: #bbbbbb;
+    --link-color: #58a6ff; /* Brighter blue for links */
+    --link-hover-color: #80bfff;
+    --section-border-color: #333333; /* Darker borders */
+    --list-item-bg-color: #2c2c2c; /* Darker list items */
+    --list-item-border-color: #444444;
+    --footer-bg-color: #1c1c1c;
+    --footer-text-color: #aaaaaa;
+    --h2-icon-color: var(--link-color);
+    --button-bg-color: var(--link-color);
+    --button-text-color: #1a1a1a; /* Dark text on bright button */
+    --theme-toggle-bg: #f8f9fa;
+    --theme-toggle-text: #343a40;
+}
+
+/* General body styling using variables */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition */
+}
+
+.container {
+    width: 80%;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Header using variables */
+header {
+    background-color: var(--header-bg-color);
+    color: var(--header-text-color);
+    padding: 2rem 0;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+header .subtitle {
+    font-size: 1.1rem;
+    color: var(--header-subtitle-color);
+}
+
+/* Nav using variables */
+nav {
+    background-color: var(--nav-bg-color);
+    padding: 0.5rem 0;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex; /* For aligning items and toggle */
+    justify-content: center; /* Center nav links */
+    align-items: center; /* Vertically align items */
+    transition: background-color 0.3s ease;
+}
+
+nav .container { /* Adjust nav container to allow space for toggle */
+    display: flex;
+    justify-content: center; /* Center nav links */
+    align-items: center;
+    position: relative; /* For positioning the toggle button absolutely if needed */
+    width: 100%; /* Take full width to position toggle */
+}
+
+
+nav a {
+    color: var(--nav-text-color);
+    text-decoration: none;
+    margin: 0 15px;
+    padding: 0.5rem 0;
+    font-weight: 500;
+}
+
+nav a:hover {
+    color: var(--nav-hover-text-color);
+}
+
+/* Theme Toggle Button Styles */
+.theme-toggle-button {
+    background-color: var(--theme-toggle-bg);
+    color: var(--theme-toggle-text);
+    border: 1px solid var(--list-item-border-color);
+    border-radius: 50%; /* Make it round */
+    padding: 0.3rem 0.5rem;
+    font-size: 0.9rem; /* Adjust icon size */
+    cursor: pointer;
+    position: absolute; /* Position it within the nav */
+    right: 20px; /* Adjust as needed from the right edge of the container */
+    top: 50%;
+    transform: translateY(-50%);
+    line-height: 1; /* Ensure icon is centered vertically */
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.theme-toggle-button:hover {
+    opacity: 0.8;
+}
+
+
+/* Content sections using variables */
+.content-section {
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--section-border-color);
+    transition: border-color 0.3s ease;
+}
+
+.content-section h2 {
+    font-size: 2rem;
+    color: var(--h2-icon-color); /* Using variable */
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+.content-section h2 .icon {
+    margin-right: 10px;
+    font-size: 1.8rem;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+ul li {
+    background-color: var(--list-item-bg-color);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--list-item-border-color);
+    border-radius: 0.25rem;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Screenshots section using variables */
+#screenshots .screenshot-gallery img {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 1rem;
+    border: 1px solid var(--list-item-border-color);
+    padding: 5px;
+    background-color: var(--list-item-bg-color); /* Use list item background for consistency */
+}
+
+/* Footer using variables */
+footer {
+    text-align: center;
+    padding: 2rem 0;
+    margin-top: 2rem;
+    background-color: var(--footer-bg-color);
+    color: var(--footer-text-color);
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* General link styling using variables */
+a {
+    color: var(--link-color);
+}
+
+a:hover {
+    color: var(--link-hover-color);
+    text-decoration: underline;
+}
