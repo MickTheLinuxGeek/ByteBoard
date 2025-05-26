@@ -1,7 +1,54 @@
 # forum/models.py
 
+from typing import ClassVar
+
+import pytz  # Import pytz for timezone handling
 from django.contrib.auth.models import User  # Import Django's built-in User model
 from django.db import models
+
+
+# Profile model for extended user information
+class Profile(models.Model):
+    # Core relationship with User model
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+
+    # Personal information fields
+    avatar = models.CharField(max_length=255, blank=True, help_text="Path or URL to avatar image")
+    bio = models.TextField(blank=True)
+    location = models.CharField(max_length=100, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    website = models.URLField(blank=True)
+
+    # Forum-specific fields
+    signature = models.TextField(blank=True)
+    user_title = models.CharField(max_length=100, blank=True)
+
+    # Contact/social media fields
+    twitter = models.CharField(max_length=100, blank=True)
+    github = models.CharField(max_length=100, blank=True)
+    linkedin = models.URLField(blank=True)
+
+    # Preferences & settings
+    # Generate timezone choices from pytz
+    TIMEZONE_CHOICES: ClassVar = [(tz, tz) for tz in pytz.common_timezones]
+    timezone = models.CharField(max_length=50, choices=TIMEZONE_CHOICES, default="UTC")
+
+    VISIBILITY_CHOICES = [  # noqa: RUF012
+        ("public", "Public"),
+        ("members", "Members Only"),
+        ("hidden", "Hidden"),
+    ]
+    profile_visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default="public")
+
+    # Email notification preferences
+    notify_on_reply = models.BooleanField(default=True)
+    receive_newsletter = models.BooleanField(default=True)
+
+    # Activity tracking
+    last_seen = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s profile"
 
 
 # Create your models here.
