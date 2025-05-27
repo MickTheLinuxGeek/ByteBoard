@@ -43,7 +43,8 @@
                 <strong>{{ post.topic.subject }}</strong></a>
                 <small>on {{ post.created_at|date:"M d, Y P" }}</small>
             </p>
-            <p>{{ post.message|truncatewords_html:30|linebreaksbr }}</p>
+            {# Used wrong template filter truncatewords_html; Should be truncatewords #}
+            <p>{{ post.message|truncatewords:30|linebreaksbr }}</p>
         </li>
         {% endfor %}
         {% if user_posts.count > 15 %}
