@@ -16,17 +16,24 @@
     <ul>
         {% for topic in sticky_topics %}
         <li class="sticky-topic"> {# Add a class for styling sticky topics #}
-            <span class="sticky-indicator" title="Sticky Topic">📌</span> {# Emoji or Icon #}
-            <a href="{% url 'forum:topic_detail' topic.id %}">
-                {{ topic.subject }}
-            </a>
-            <small>
-                by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
-                {{ topic.created_by.username }}
-            </a>
-                on {{ topic.created_at|date:"M d, Y H:i" }}
-                ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
-            </small>
+            <div class="topic-avatar">
+                <a href="{% url 'forum:user_profile' topic.created_by.username %}">
+                    <img src="{{ topic.created_by.profile.get_avatar_url }}" alt="{{ topic.created_by.username }}'s avatar">
+                </a>
+            </div>
+            <div class="topic-content">
+                <span class="sticky-indicator" title="Sticky Topic">📌</span> {# Emoji or Icon #}
+                <a href="{% url 'forum:topic_detail' topic.id %}">
+                    {{ topic.subject }}
+                </a>
+                <small>
+                    by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
+                    {{ topic.created_by.username }}
+                </a>
+                    on {{ topic.created_at|date:"M d, Y H:i" }}
+                    ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
+                </small>
+            </div>
         </li>
         {% endfor %}
     </ul>
@@ -46,7 +53,7 @@
                 {{ topic.subject }}
             </a>
             <small>
-                by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
+                &#8204; by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
                 {{ topic.created_by.username }}</a>
                 on {{ topic.created_at|date:"M d, Y H:i" }}
                 ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})

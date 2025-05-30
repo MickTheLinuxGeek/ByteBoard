@@ -131,6 +131,23 @@ form button[type="submit"]:hover {
     margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.topic-avatar {
+    margin-right: 15px;
+}
+
+.topic-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.topic-content {
+    flex: 1;
 }
 
 .topic-list li a {
@@ -219,6 +236,80 @@ form button[type="submit"]:hover {
     margin-right: 8px;
     font-size: 1.1em;
     color: #ffc107; /* Color for the pin emoji or icon if not an image */
+}
+
+/* Profile styling */
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    margin-right: 20px;
+}
+
+.avatar-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #0779e4;
+}
+
+.profile-title {
+    flex: 1;
+}
+
+.user-title {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.profile-info {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.bio {
+    margin: 15px 0;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 5px;
+}
+
+.social-links {
+    margin: 15px 0;
+}
+
+.social-links a {
+    color: #0779e4;
+    text-decoration: none;
+}
+
+.social-links a:hover {
+    text-decoration: underline;
+}
+
+/* Post avatars */
+.post-avatar {
+    float: left;
+    margin-right: 15px;
+}
+
+.post-avatar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.post-content {
+    overflow: hidden;
 }
 
 footer {

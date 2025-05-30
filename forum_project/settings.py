@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from warnings import filterwarnings
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -114,6 +115,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# Media files (User uploads)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = Path(BASE_DIR / "media")
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -124,3 +130,9 @@ LOGIN_REDIRECT_URL = "/forum/"  # Redirect to the forum index
 
 # URL to redirect to after logout
 LOGOUT_REDIRECT_URL = "/forum/"  # Redirect to the forum index
+
+filterwarnings(
+    "ignore",
+    "The FORMS_URLFIELD_ASSUME_HTTPS transitional setting is deprecated.",
+)
+FORMS_URLFIELD_ASSUME_HTTPS = True

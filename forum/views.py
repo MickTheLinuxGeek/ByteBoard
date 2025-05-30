@@ -19,10 +19,14 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponseForbidden  # For permission errors
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone  # Import timezone
+from PIL import Image, UnidentifiedImageError
 
 # We'll need forms later:
-from .forms import NewPostForm, NewTopicForm
-from .models import Post, Topic
+from .forms import NewPostForm, NewTopicForm, ProfileForm
+from .models import Post, Profile, Topic
+
+IMAGE_HEIGHT_MAX = 500
+IMAGE_WIDTH_MAX = 500
 
 
 # View to display the list of all topics with sticky topics at the top
@@ -252,3 +256,73 @@ def user_profile(request, username):
         "user_posts": user_posts,
     }
     return render(request, "forum/user_profile.html", context)
+
+
+@login_required
+def edit_profile(request):
+    """View for editing user profile information including avatar upload."""
+    # Get the current user's profile or create one if it doesn't exist
+    profile, created = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            # Save the form without committing to process the avatar
+            profile = form.save(commit=False)
+
+            # Handle avatar resizing if needed
+            if "avatar" in request.FILES:
+                avatar_file = request.FILES["avatar"]
+                # Resize large images
+                try:
+                    img = Image.open(avatar_file)
+                    if img.height > IMAGE_HEIGHT_MAX or img.width > IMAGE_WIDTH_MAX:
+                        # Calculate new dimensions while maintaining aspect ratio
+                        if img.height > img.width:
+                            ratio = 500.0 / img.height
+                            new_height = 500
+                            new_width = int(img.width * ratio)
+                        else:
+                            ratio = 500.0 / img.width
+                            new_width = 500
+                            new_height = int(img.height * ratio)
+
+                        # Resize the image
+                        img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+                        # Save the resized image back to the avatar field
+                        # This requires saving to a temporary file
+                        import io
+
+                        from django.core.files.uploadedfile import InMemoryUploadedFile
+
+                        output = io.BytesIO()
+                        # Determine the format from the original file
+                        avatar_format = avatar_file.name.split(".")[-1].upper()
+                        if avatar_format == "JPG":
+                            avatar_format = "JPEG"
+
+                        # Save to the BytesIO object
+                        img.save(output, format=avatar_format, quality=85)
+                        output.seek(0)
+
+                        # Replace the avatar file with the resized version
+                        profile.avatar = InMemoryUploadedFile(
+                            output, "ImageField",
+                            avatar_file.name,
+                            f"image/{avatar_format.lower()}",
+                            output.getbuffer().nbytes,
+                            None,
+                        )
+                # except Exception as e:
+                except (UnidentifiedImageError, OSError, ValueError, AttributeError, IndexError, TypeError) as e:
+                    messages.error(request, f"Error processing image: {e!s}")
+
+            # Save the profile
+            profile.save()
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect("forum:user_profile", username=request.user.username)
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, "forum/edit_profile.html", {"form": form})

@@ -13,7 +13,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
 
     # Personal information fields
-    avatar = models.CharField(max_length=255, blank=True, help_text="Path or URL to avatar image")
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True, help_text="Upload your avatar image")
     bio = models.TextField(blank=True)
     location = models.CharField(max_length=100, blank=True)
     birth_date = models.DateField(null=True, blank=True)
@@ -49,6 +49,13 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s profile"
+
+    def get_avatar_url(self):
+        """Returns the URL of the user's avatar or a default avatar if none is set."""
+        if self.avatar and hasattr(self.avatar, "url"):
+            return self.avatar.url
+        # Return a default avatar URL
+        return "/static/forum/images/default_avatar.png"
 
 
 # Create your models here.

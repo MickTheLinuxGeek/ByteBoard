@@ -3,17 +3,57 @@
 {% block title %}{{ profile_user.username }}'s Profile{% endblock %}
 
 {% block content %}
-<h2>{{ profile_user.username }}'s Profile</h2>
+<div class="profile-header">
+    <div class="profile-avatar">
+        <img src="{{ profile_user.profile.get_avatar_url }}" alt="{{ profile_user.username }}'s avatar" class="avatar-img">
+    </div>
+    <div class="profile-title">
+        <h2>{{ profile_user.username }}'s Profile</h2>
+        {% if profile_user.profile.user_title %}
+        <p class="user-title">{{ profile_user.profile.user_title }}</p>
+        {% endif %}
+    </div>
+</div>
 <hr>
 
 <div class="profile-info">
     <p><strong>Username:</strong> {{ profile_user.username }}</p>
     <p><strong>Date Joined:</strong> {{ profile_user.date_joined|date:"F d, Y" }}</p>
+
+    {% if profile_user.profile.location %}
+    <p><strong>Location:</strong> {{ profile_user.profile.location }}</p>
+    {% endif %}
+
+    {% if profile_user.profile.website %}
+    <p><strong>Website:</strong> <a href="{{ profile_user.profile.website }}" target="_blank">{{ profile_user.profile.website }}</a></p>
+    {% endif %}
+
+    {% if profile_user.profile.bio %}
+    <div class="bio">
+        <h4>About Me</h4>
+        <p>{{ profile_user.profile.bio|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+
+    <div class="social-links">
+        {% if profile_user.profile.twitter %}
+        <p><strong>Twitter:</strong> <a href="https://twitter.com/{{ profile_user.profile.twitter }}" target="_blank">@{{ profile_user.profile.twitter }}</a></p>
+        {% endif %}
+
+        {% if profile_user.profile.github %}
+        <p><strong>GitHub:</strong> <a href="https://github.com/{{ profile_user.profile.github }}" target="_blank">{{ profile_user.profile.github }}</a></p>
+        {% endif %}
+
+        {% if profile_user.profile.linkedin %}
+        <p><strong>LinkedIn:</strong> <a href="{{ profile_user.profile.linkedin }}" target="_blank">Profile</a></p>
+        {% endif %}
+    </div>
+
     <p><strong>Total Topics Started:</strong> {{ user_topics.count }}</p>
     <p><strong>Total Posts Made:</strong> {{ user_posts.count }}</p>
-    {# Add link to edit profile if viewing own profile - for a future step #}
+
     {% if user == profile_user %}
-    {# <p><a href="{% url 'edit_profile' %}">Edit Profile</a></p> #}
+    <p><a href="{% url 'forum:edit_profile' %}" class="btn btn-primary">Edit Profile</a></p>
     {% endif %}
 </div>
 <hr>
@@ -25,7 +65,7 @@
         {% for topic in user_topics %}
         <li>
             <a href="{% url 'forum:topic_detail' topic.id %}">{{ topic.subject }}</a>
-            <small>on {{ topic.created_at|date:"M d, Y P" }}</small>
+            <small>&#8204; on {{ topic.created_at|date:"M d, Y P" }}</small>
         </li>
         {% endfor %}
     </ul>

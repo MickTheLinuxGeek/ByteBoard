@@ -1,8 +1,11 @@
 # forum/forms.py
 
+import pathlib
 from typing import ClassVar
 
 from django import forms
+from django.core.exceptions import ValidationError
+from PIL import Image
 
 from .models import Profile
 
@@ -13,7 +16,9 @@ class NewTopicForm(forms.Form):
         max_length=255,
         required=True,
         label="Subject",  # Label displayed in the form
-        widget=forms.TextInput(attrs={"placeholder": "Enter the topic subject"}),  # Customize input appearance
+        widget=forms.TextInput(
+            attrs={"placeholder": "Enter the topic subject"},
+        ),  # Customize input appearance
     )
     message = forms.CharField(
         required=True,
@@ -37,11 +42,76 @@ class NewPostForm(forms.Form):
 
 # Form for creating and editing user profiles
 class ProfileForm(forms.ModelForm):
-    """
-    Form for creating and editing user profiles.iles.
+    # File validation constants
+    MAX_FILE_SIZE_MB = 2
+    MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024
+    VALID_EXTENSIONS: ClassVar[list] = [".jpg", ".jpeg", ".png", ".gif"]
 
-    Uses ModelForm to automatically create form fields from the Profile model.
-    """
+    # Image dimension constants
+    IMAGE_HEIGHT_MIN = 100
+    IMAGE_WIDTH_MIN = 100
+    IMAGE_HEIGHT_MAX = 1000  # Assuming this was defined elsewhere
+    IMAGE_WIDTH_MAX = 1000  # Assuming this was defined elsewhere
+
+    # Error messages
+    ERROR_FILE_SIZE = (
+        f"Image file too large. Please keep it under {MAX_FILE_SIZE_MB}MB."
+    )
+    ERROR_FILE_TYPE = (
+        f"Unsupported file extension. Please use {', '.join(VALID_EXTENSIONS)}"
+    )
+    ERROR_DIMENSIONS = f"Image too small. Minimum dimensions are {IMAGE_WIDTH_MIN}x{IMAGE_HEIGHT_MIN} pixels."
+
+    def clean_avatar(self) -> object | None:
+        """
+        Validates the uploaded avatar image.
+
+        Checks:
+        - File size (max 2MB)
+        - File type (must be jpg, jpeg, png, or gif)
+        - Image dimensions (minimum 100x100 pixels)
+
+        Returns:
+        - object | None: The validated avatar file or None if no file was uploaded
+        Raises:
+        ValidationError: If any validation check fails
+
+        """
+        avatar = self.cleaned_data.get("avatar")
+        if not avatar:
+            return avatar
+
+        self._validate_file_size(avatar)
+        self._validate_file_type(avatar)
+        self._validate_image_dimensions(avatar)
+
+        return avatar
+
+    def _validate_file_size(self, avatar) -> None:
+        if avatar.size > self.MAX_FILE_SIZE_BYTES:
+            raise ValidationError(self.ERROR_FILE_SIZE)
+
+    def _validate_file_type(self, avatar) -> None:
+        ext = pathlib.Path(avatar.name).suffix.lower()
+        if ext not in self.VALID_EXTENSIONS:
+            raise ValidationError(self.ERROR_FILE_TYPE)
+
+    def _validate_image_dimensions(self, avatar) -> None:
+        def raise_dimension_error():
+            raise ValidationError(self.ERROR_DIMENSIONS)
+
+        def raise_invalid_image(exp):
+            msg = f"Invalid image file: {exp!s}"
+            raise ValidationError(msg) from exp
+
+        try:
+            img = Image.open(avatar)
+            if img.height < self.IMAGE_HEIGHT_MIN or img.width < self.IMAGE_WIDTH_MIN:
+                raise_dimension_error()
+            # Note: Large images will be resized in the view after saving
+        # except Exception as e:
+        except ValidationError as e:
+            raise_invalid_image(e)
 
     class Meta:
         model = Profile
@@ -51,15 +121,21 @@ class ProfileForm(forms.ModelForm):
 
         # Custom widgets for better user experience
         widgets: ClassVar[dict] = {
-            "bio": forms.Textarea(attrs={"rows": 4, "placeholder": "Tell us about yourself"}),
-            "signature": forms.Textarea(attrs={"rows": 3, "placeholder": "Your forum signature"}),
+            "bio": forms.Textarea(
+                attrs={"rows": 4, "placeholder": "Tell us about yourself"},
+            ),
+            "signature": forms.Textarea(
+                attrs={"rows": 3, "placeholder": "Your forum signature"},
+            ),
             "birth_date": forms.DateInput(attrs={"type": "date"}),
-            "avatar": forms.TextInput(attrs={"placeholder": "URL to your avatar image"}),
+            "avatar": forms.FileInput(attrs={"accept": "image/*"}),
             "location": forms.TextInput(attrs={"placeholder": "Your location"}),
             "website": forms.URLInput(attrs={"placeholder": "https://example.com"}),
             "twitter": forms.TextInput(attrs={"placeholder": "Your Twitter username"}),
             "github": forms.TextInput(attrs={"placeholder": "Your GitHub username"}),
-            "linkedin": forms.URLInput(attrs={"placeholder": "Your LinkedIn profile URL"}),
+            "linkedin": forms.URLInput(
+                attrs={"placeholder": "Your LinkedIn profile URL"},
+            ),
         }
 
         # Custom labels for fields

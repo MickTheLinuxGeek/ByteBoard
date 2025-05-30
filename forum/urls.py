@@ -28,4 +28,7 @@ urlpatterns = [
 
     # Add this line for user profiles
     path("profile/<str:username>/", views.user_profile, name="user_profile"),
+
+    # Add this line for editing user profile
+    path("profile/edit/", views.edit_profile, name="edit_profile"),
 ]
