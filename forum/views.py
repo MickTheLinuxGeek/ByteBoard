@@ -243,6 +243,23 @@ def user_profile(request, username):
     # Get the User object for the requested username, or raise a 404 if not found
     profile_user = get_object_or_404(User, username=username)
 
+    # Check profile visibility settings
+    profile = profile_user.profile
+    visibility = profile.profile_visibility
+
+    # Determine if the current user can view this profile
+    can_view = False
+
+    # Case 1: Profile owner can always view their own profile
+    if request.user == profile_user or visibility == "public" or (visibility == "members" and request.user.is_authenticated):
+        can_view = True
+    # Case 4: Hidden profiles are only visible to the profile owner (handled in Case 1)
+
+    # If the user doesn't have permission to view the profile, show a message and redirect
+    if not can_view:
+        messages.error(request, "You don't have permission to view this profile.")
+        return redirect("forum:forum_index")
+
     # Get topics created by this user, ordered by most recent
     user_topics = Topic.objects.filter(created_by=profile_user).order_by("-created_at")
 
@@ -254,6 +271,7 @@ def user_profile(request, username):
         "profile_user": profile_user,
         "user_topics": user_topics,
         "user_posts": user_posts,
+        "visibility": visibility,  # Pass visibility to the template
     }
     return render(request, "forum/user_profile.html", context)
 

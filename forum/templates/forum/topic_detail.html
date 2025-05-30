@@ -38,7 +38,7 @@
         {% if post.created_by.profile.signature %}
         <div class="post-signature">
             <hr style="margin: 10px 0; border-top: 1px dotted #ccc;">
-            <small>{{ post.created_by.profile.signature|linebreaksbr }}</small>
+            <small>{{ post.created_by.profile.get_sanitized_signature|safe }}</small>
         </div>
         {% endif %}
 

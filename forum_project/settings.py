@@ -48,6 +48,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "forum.middleware.LastSeenMiddleware",  # Add our custom middleware for tracking user activity
 ]
 
 ROOT_URLCONF = "forum_project.urls"

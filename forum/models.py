@@ -2,6 +2,7 @@
 
 from typing import ClassVar
 
+import bleach
 import pytz  # Import pytz for timezone handling
 from django.contrib.auth.models import User  # Import Django's built-in User model
 from django.db import models
@@ -13,7 +14,12 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
 
     # Personal information fields
-    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True, help_text="Upload your avatar image")
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        blank=True,
+        null=True,
+        help_text="Upload your avatar image",
+    )
     bio = models.TextField(blank=True)
     location = models.CharField(max_length=100, blank=True)
     birth_date = models.DateField(null=True, blank=True)
@@ -38,7 +44,11 @@ class Profile(models.Model):
         ("members", "Members Only"),
         ("hidden", "Hidden"),
     ]
-    profile_visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default="public")
+    profile_visibility = models.CharField(
+        max_length=10,
+        choices=VISIBILITY_CHOICES,
+        default="public",
+    )
 
     # Email notification preferences
     notify_on_reply = models.BooleanField(default=True)
@@ -57,12 +67,54 @@ class Profile(models.Model):
         # Return a default avatar URL
         return "/static/forum/images/default_avatar.png"
 
+    def get_sanitized_signature(self):
+        """Returns the user's signature with HTML sanitized to prevent XSS attacks."""
+        if not self.signature:
+            return ""
+
+        # Define allowed tags and attributes
+        allowed_tags = [
+            "a",
+            "abbr",
+            "acronym",
+            "b",
+            "blockquote",
+            "code",
+            "em",
+            "i",
+            "li",
+            "ol",
+            "strong",
+            "ul",
+            "p",
+            "br",
+        ]
+        allowed_attrs = {
+            "a": ["href", "title"],
+            "abbr": ["title"],
+            "acronym": ["title"],
+        }
+
+        # Clean the signature using bleach
+        clean_signature = bleach.clean(
+            self.signature,
+            tags=allowed_tags,
+            attributes=allowed_attrs,
+            strip=True,
+        )
+
+        return clean_signature
+
 
 # Create your models here.
 # Model for a discussion topic/thread
 class Topic(models.Model):
     subject = models.CharField(max_length=255)
-    created_by = models.ForeignKey(User, related_name="topics", on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        User,
+        related_name="topics",
+        on_delete=models.CASCADE,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     is_sticky = models.BooleanField(default=False)  # Add this line for sticky topics
 
@@ -77,9 +129,16 @@ class Topic(models.Model):
 class Post(models.Model):
     message = models.TextField()
     topic = models.ForeignKey(Topic, related_name="posts", on_delete=models.CASCADE)
-    created_by = models.ForeignKey(User, related_name="posts_created", on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        User,
+        related_name="posts_created",
+        on_delete=models.CASCADE,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(null=True, blank=True)  # Field to store last update time
+    updated_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )  # Field to store last update time
 
     # We could add 'updated_at' and 'updated_by' if we implement editing
 

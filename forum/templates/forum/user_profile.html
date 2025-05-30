@@ -35,6 +35,13 @@
     </div>
     {% endif %}
 
+    {% if profile_user.profile.signature %}
+    <div class="signature">
+        <h4>Signature</h4>
+        <div>{{ profile_user.profile.get_sanitized_signature|safe }}</div>
+    </div>
+    {% endif %}
+
     <div class="social-links">
         {% if profile_user.profile.twitter %}
         <p><strong>Twitter:</strong> <a href="https://twitter.com/{{ profile_user.profile.twitter }}" target="_blank">@{{ profile_user.profile.twitter }}</a></p>
@@ -54,6 +61,20 @@
 
     {% if user == profile_user %}
     <p><a href="{% url 'forum:edit_profile' %}" class="btn btn-primary">Edit Profile</a></p>
+
+    <!-- Display visibility information to the profile owner -->
+    <div class="profile-visibility-info" style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+        <p><strong>Profile Visibility:</strong> 
+            {% if visibility == 'public' %}
+                <span style="color: green;">Public</span> - Your profile is visible to everyone.
+            {% elif visibility == 'members' %}
+                <span style="color: blue;">Members Only</span> - Your profile is only visible to logged-in users.
+            {% elif visibility == 'hidden' %}
+                <span style="color: red;">Hidden</span> - Your profile is only visible to you.
+            {% endif %}
+        </p>
+        <p><small>You can change this setting in the Edit Profile page.</small></p>
+    </div>
     {% endif %}
 </div>
 <hr>
