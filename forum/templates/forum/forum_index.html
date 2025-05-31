@@ -30,6 +30,9 @@
                     by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
                     {{ topic.created_by.username }}
                 </a>
+                    {% if topic.created_by.profile.user_title %}
+                    <span class="user-title">{{ topic.created_by.profile.user_title }}</span>
+                    {% endif %}
                     on {{ topic.created_at|date:"M d, Y H:i" }}
                     ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
                 </small>
@@ -49,15 +52,25 @@
     <ul>
         {% for topic in regular_topics_page %} {# Iterate over paginated regular topics #}
         <li>
-            <a href="{% url 'forum:topic_detail' topic.id %}">
-                {{ topic.subject }}
-            </a>
-            <small>
-                &#8204; by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
-                {{ topic.created_by.username }}</a>
-                on {{ topic.created_at|date:"M d, Y H:i" }}
-                ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
-            </small>
+            <div class="topic-avatar">
+                <a href="{% url 'forum:user_profile' topic.created_by.username %}">
+                    <img src="{{ topic.created_by.profile.get_avatar_url }}" alt="{{ topic.created_by.username }}'s avatar">
+                </a>
+            </div>
+            <div class="topic-content">
+                <a href="{% url 'forum:topic_detail' topic.id %}">
+                    {{ topic.subject }}
+                </a>
+                <small>
+                    by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
+                    {{ topic.created_by.username }}</a>
+                    {% if topic.created_by.profile.user_title %}
+                    <span class="user-title">{{ topic.created_by.profile.user_title }}</span>
+                    {% endif %}
+                    on {{ topic.created_at|date:"M d, Y H:i" }}
+                    ({{ topic.posts.count }} post{{ topic.posts.count|pluralize }})
+                </small>
+            </div>
         </li>
         {% endfor %}
     </ul>
