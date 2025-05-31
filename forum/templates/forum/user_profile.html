@@ -28,6 +28,18 @@
     <p><strong>Website:</strong> <a href="{{ profile_user.profile.website }}" target="_blank">{{ profile_user.profile.website }}</a></p>
     {% endif %}
 
+    {% if profile_user.profile.birth_date and user == profile_user %}
+    <p><strong>Birth Date:</strong> {{ profile_user.profile.birth_date|date:"F d, Y" }}</p>
+    {% endif %}
+
+    {% if profile_user.profile.timezone %}
+    <p><strong>Timezone:</strong> {{ profile_user.profile.timezone }}</p>
+    {% endif %}
+
+    {% if profile_user.profile.last_seen %}
+    <p><strong>Last Seen:</strong> {{ profile_user.profile.last_seen|date:"F d, Y P" }}</p>
+    {% endif %}
+
     {% if profile_user.profile.bio %}
     <div class="bio">
         <h4>About Me</h4>
@@ -74,6 +86,16 @@
             {% endif %}
         </p>
         <p><small>You can change this setting in the Edit Profile page.</small></p>
+    </div>
+
+    <!-- Display notification preferences to the profile owner -->
+    <div class="notification-preferences" style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+        <h4>Notification Preferences</h4>
+        <ul>
+            <li><strong>Notify on Reply:</strong> {% if profile_user.profile.notify_on_reply %}Yes{% else %}No{% endif %}</li>
+            <li><strong>Receive Newsletter:</strong> {% if profile_user.profile.receive_newsletter %}Yes{% else %}No{% endif %}</li>
+        </ul>
+        <p><small>You can change these settings in the Edit Profile page.</small></p>
     </div>
     {% endif %}
 </div>
