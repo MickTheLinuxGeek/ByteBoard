@@ -251,7 +251,11 @@ def user_profile(request, username):
     can_view = False
 
     # Case 1: Profile owner can always view their own profile
-    if request.user == profile_user or visibility == "public" or (visibility == "members" and request.user.is_authenticated):
+    if (
+        request.user == profile_user
+        or visibility == "public"
+        or (visibility == "members" and request.user.is_authenticated)
+    ):
         can_view = True
     # Case 4: Hidden profiles are only visible to the profile owner (handled in Case 1)
 
@@ -306,7 +310,10 @@ def edit_profile(request):
                             new_height = int(img.height * ratio)
 
                         # Resize the image
-                        img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                        img = img.resize(
+                            (new_width, new_height),
+                            Image.Resampling.LANCZOS,
+                        )
 
                         # Save the resized image back to the avatar field
                         # This requires saving to a temporary file
@@ -326,14 +333,22 @@ def edit_profile(request):
 
                         # Replace the avatar file with the resized version
                         profile.avatar = InMemoryUploadedFile(
-                            output, "ImageField",
+                            output,
+                            "ImageField",
                             avatar_file.name,
                             f"image/{avatar_format.lower()}",
                             output.getbuffer().nbytes,
                             None,
                         )
                 # except Exception as e:
-                except (UnidentifiedImageError, OSError, ValueError, AttributeError, IndexError, TypeError) as e:
+                except (
+                    UnidentifiedImageError,
+                    OSError,
+                    ValueError,
+                    AttributeError,
+                    IndexError,
+                    TypeError,
+                ) as e:
                     messages.error(request, f"Error processing image: {e!s}")
 
             # Save the profile
