@@ -20,40 +20,41 @@
     <p><strong>Username:</strong> {{ profile_user.username }}</p>
     <p><strong>Date Joined:</strong> {{ profile_user.date_joined|date:"F d, Y" }}</p>
 
-    {% if profile_user.profile.location %}
+    {% if info_level >= 1 and profile_user.profile.location %}
     <p><strong>Location:</strong> {{ profile_user.profile.location }}</p>
     {% endif %}
 
-    {% if profile_user.profile.website %}
+    {% if info_level >= 1 and profile_user.profile.website %}
     <p><strong>Website:</strong> <a href="{{ profile_user.profile.website }}" target="_blank">{{ profile_user.profile.website }}</a></p>
     {% endif %}
 
-    {% if profile_user.profile.birth_date and user == profile_user %}
+    {% if info_level >= 2 and profile_user.profile.birth_date %}
     <p><strong>Birth Date:</strong> {{ profile_user.profile.birth_date|date:"F d, Y" }}</p>
     {% endif %}
 
-    {% if profile_user.profile.timezone %}
+    {% if info_level >= 1 and profile_user.profile.timezone %}
     <p><strong>Timezone:</strong> {{ profile_user.profile.timezone }}</p>
     {% endif %}
 
-    {% if profile_user.profile.last_seen %}
+    {% if info_level >= 1 and profile_user.profile.last_seen %}
     <p><strong>Last Seen:</strong> {{ profile_user.profile.last_seen|date:"F d, Y P" }}</p>
     {% endif %}
 
-    {% if profile_user.profile.bio %}
+    {% if info_level >= 1 and profile_user.profile.bio %}
     <div class="bio">
         <h4>About Me</h4>
         <p>{{ profile_user.profile.bio|linebreaksbr }}</p>
     </div>
     {% endif %}
 
-    {% if profile_user.profile.signature %}
+    {% if info_level >= 1 and profile_user.profile.signature %}
     <div class="signature">
         <h4>Signature</h4>
         <div>{{ profile_user.profile.get_sanitized_signature|safe }}</div>
     </div>
     {% endif %}
 
+    {% if info_level >= 1 %}
     <div class="social-links">
         {% if profile_user.profile.twitter %}
         <p><strong>Twitter:</strong> <a href="https://twitter.com/{{ profile_user.profile.twitter }}" target="_blank">@{{ profile_user.profile.twitter }}</a></p>
@@ -67,14 +68,19 @@
         <p><strong>LinkedIn:</strong> <a href="{{ profile_user.profile.linkedin }}" target="_blank">Profile</a></p>
         {% endif %}
     </div>
+    {% endif %}
 
     <p><strong>Total Topics Started:</strong> {{ user_topics.count }}</p>
     <p><strong>Total Posts Made:</strong> {{ user_posts.count }}</p>
 
-    {% if user == profile_user %}
+    {% if is_owner %}
     <p><a href="{% url 'forum:edit_profile' %}" class="btn btn-primary">Edit Profile</a></p>
+    {% elif is_admin %}
+    <p><a href="{% url 'forum:edit_other_profile' profile_user.username %}" class="btn btn-warning">Edit Profile (Admin)</a></p>
+    {% endif %}
 
     <!-- Display visibility information to the profile owner -->
+    {% if info_level >= 2 %}
     <div class="profile-visibility-info" style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
         <p><strong>Profile Visibility:</strong> 
             {% if visibility == 'public' %}
@@ -85,7 +91,9 @@
                 <span style="color: red;">Hidden</span> - Your profile is only visible to you.
             {% endif %}
         </p>
+        {% if is_owner %}
         <p><small>You can change this setting in the Edit Profile page.</small></p>
+        {% endif %}
     </div>
 
     <!-- Display notification preferences to the profile owner -->
@@ -95,7 +103,9 @@
             <li><strong>Notify on Reply:</strong> {% if profile_user.profile.notify_on_reply %}Yes{% else %}No{% endif %}</li>
             <li><strong>Receive Newsletter:</strong> {% if profile_user.profile.receive_newsletter %}Yes{% else %}No{% endif %}</li>
         </ul>
+        {% if is_owner %}
         <p><small>You can change these settings in the Edit Profile page.</small></p>
+        {% endif %}
     </div>
     {% endif %}
 </div>

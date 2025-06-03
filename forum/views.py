@@ -22,6 +22,7 @@ from django.utils import timezone  # Import timezone
 from PIL import Image, UnidentifiedImageError
 
 # We'll need forms later:
+from .decorators import profile_visibility_required
 from .forms import NewPostForm, NewTopicForm, ProfileForm
 from .models import Post, Profile, Topic
 
@@ -239,30 +240,34 @@ def delete_post(request, post_id):
     return render(request, "forum/delete_post_confirm.html", context)
 
 
+@profile_visibility_required
 def user_profile(request, username):
     # Get the User object for the requested username, or raise a 404 if not found
     profile_user = get_object_or_404(User, username=username)
 
-    # Check profile visibility settings
+    # Get the profile and its visibility setting
     profile = profile_user.profile
     visibility = profile.profile_visibility
 
-    # Determine if the current user can view this profile
-    can_view = False
+    # Determine the level of profile information to display
+    # 0 = Basic info only (username, join date, post count)
+    # 1 = Standard info (basic + location, website, bio, signature, social links)
+    # 2 = Full info (standard + birth date, notification preferences)
+    info_level = 0
 
-    # Case 1: Profile owner can always view their own profile
+    # Profile owner and admins can see everything
     if (
         request.user == profile_user
-        or visibility == "public"
-        or (visibility == "members" and request.user.is_authenticated)
+        or request.user.is_staff
+        or request.user.is_superuser
     ):
-        can_view = True
-    # Case 4: Hidden profiles are only visible to the profile owner (handled in Case 1)
-
-    # If the user doesn't have permission to view the profile, show a message and redirect
-    if not can_view:
-        messages.error(request, "You don't have permission to view this profile.")
-        return redirect("forum:forum_index")
+        info_level = 2
+    # Members can see standard info for "members" and "public" profiles
+    elif (
+        request.user.is_authenticated and (visibility in {"members", "public"})
+    ) or visibility == "public":
+        info_level = 1
+    # Otherwise, only basic info is shown (handled by default info_level = 0)
 
     # Get topics created by this user, ordered by most recent
     user_topics = Topic.objects.filter(created_by=profile_user).order_by("-created_at")
@@ -276,15 +281,30 @@ def user_profile(request, username):
         "user_topics": user_topics,
         "user_posts": user_posts,
         "visibility": visibility,  # Pass visibility to the template
+        "info_level": info_level,  # Pass info level to the template
+        "is_owner": request.user == profile_user,  # Is the viewer the profile owner?
+        "is_admin": request.user.is_staff
+        or request.user.is_superuser,  # Is the viewer an admin?
     }
     return render(request, "forum/user_profile.html", context)
 
 
 @login_required
-def edit_profile(request):
+def edit_profile(request, username=None):
     """View for editing user profile information including avatar upload."""
-    # Get the current user's profile or create one if it doesn't exist
-    profile, created = Profile.objects.get_or_create(user=request.user)
+    # If username is provided, get that user's profile, otherwise use the current user's profile
+    if username and username != request.user.username:
+        # Check if the current user is an admin
+        if not request.user.is_staff and not request.user.is_superuser:
+            messages.error(request, "You don't have permission to edit this profile.")
+            return redirect("forum:forum_index")
+
+        # Get the user whose profile we're editing
+        user = get_object_or_404(User, username=username)
+        profile, created = Profile.objects.get_or_create(user=user)
+    else:
+        # Get the current user's profile or create one if it doesn't exist
+        profile, created = Profile.objects.get_or_create(user=request.user)
 
     if request.method == "POST":
         form = ProfileForm(request.POST, request.FILES, instance=profile)
