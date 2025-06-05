@@ -40,8 +40,12 @@ header form {
     border-radius: 5px;
 }
 
-header h1 a {
+/*header h1 a {
     float: left;
+} */
+
+header h1 {
+    text-align: center;
 }
 
 header .auth-links {

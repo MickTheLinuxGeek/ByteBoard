@@ -6,11 +6,12 @@
     <title>{% block title %}My Forum{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'forum/style.css' %}">
+    <link rel="icon" href="{% static 'forum/favicon.ico' %}">
 </head>
 <body>
 <div class="container"> {# Wrap content in a container for better centering/width control #}
     <header>
-        <h1><a href="{% url 'forum:forum_index' %}">My Simple Forum</a></h1>
+        <h1><a href="{% url 'forum:forum_index' %}">ByteBoard Forums</a></h1>
         <div class="auth-links"> {# Add a class for easier styling #}
             {% if user.is_authenticated %}
             Hello, {{ user.username }}!
