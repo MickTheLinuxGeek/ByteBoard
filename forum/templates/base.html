@@ -3,29 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Forum{% endblock %}</title>
+    <title>{% block title %}ByteBoard Forums{% endblock %}</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'forum/style.css' %}">
     <link rel="icon" href="{% static 'forum/favicon.ico' %}">
 </head>
 <body>
-<div class="container"> {# Wrap content in a container for better centering/width control #}
-    <header>
-        <h1><a href="{% url 'forum:forum_index' %}">ByteBoard Forums</a></h1>
+<header>
+    <div class="header-container">
+        <div class="header-logo">
+            <img src="{% static 'forum/ByteBoard_Logo_dark.png' %}" alt="ByteBoard Logo" class="site-logo">
+            <h1><a href="{% url 'forum:forum_index' %}">ByteBoard Forums</a></h1>
+        </div>
         <div class="auth-links"> {# Add a class for easier styling #}
             {% if user.is_authenticated %}
-            Hello, {{ user.username }}!
+            <span class="user-greeting">Hello, {{ user.username }}!</span>
             <form action="{% url 'logout' %}" method="post">
                 {% csrf_token %}
-                <button type="submit">Logout</button>
+                <button type="submit" class="btn btn-auth">Logout</button>
             </form>
             {% else %}
-            <a href="{% url 'login' %}">Login</a>
-            | <a href="{% url 'signup' %}">Sign Up</a>
+            <a href="{% url 'login' %}" class="btn btn-auth">Login</a>
+            <a href="{% url 'signup' %}" class="btn btn-auth">Sign Up</a>
             {% endif %}
         </div>
-        {# Removed the HTML hr as borders are often handled by CSS #}
-    </header>
+    </div>
+</header>
+<div class="container"> {# Wrap content in a container for better centering/width control #}
     {% if messages %}
     <ul class="messages" style="list-style-type: none; padding: 0;">
         {% for message in messages %}
@@ -52,7 +56,7 @@
 
     <footer>
         {# Removed the HTML hr #}
-        <p>&copy; {% now "Y" %} My Forum Project</p>
+        <p>&copy; {% now "Y" %} Michael Biel & ByteBoard Forums</p>
     </footer>
 </div>
 {# End .container #}

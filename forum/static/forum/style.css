@@ -19,9 +19,19 @@ body {
 header {
     background: #333;
     color: #fff;
-    padding-top: 30px;
+    padding: 15px 0;
     min-height: 70px;
     border-bottom: #0779e4 3px solid;
+    width: 100%;
+}
+
+.header-container {
+    width: 80%;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
 }
 
 header a {
@@ -32,29 +42,59 @@ header a {
 }
 
 header form {
-    background: #333;
-    color: #333;
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    background: transparent;
     border: 0;
-    padding: 7px 20px;
-    cursor: pointer;
-    border-radius: 5px;
 }
 
-/*header h1 a {
-    float: left;
-} */
+.header-logo {
+    display: flex;
+    align-items: center;
+}
+
+.site-logo {
+    height: 120px;
+    width: 120px;
+    margin-right: 10px;
+}
 
 header h1 {
-    text-align: center;
+    margin: 0;
+    font-size: 24px;
 }
 
 header .auth-links {
-    float: right;
-    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-header .auth-links a {
-    margin-left: 15px;
+.user-greeting {
+    margin-right: 10px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-auth {
+    background-color: #0779e4;
+    color: white;
+    border: none;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.btn-auth:hover {
+    background-color: #0056b3;
 }
 
 header::after { /* Clearfix for floated elements */
