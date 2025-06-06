@@ -17,11 +17,23 @@
         </div>
         <div class="auth-links"> {# Add a class for easier styling #}
             {% if user.is_authenticated %}
-            <span class="user-greeting">Hello, {{ user.username }}!</span>
-            <form action="{% url 'logout' %}" method="post">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-auth">Logout</button>
-            </form>
+            <div class="user-greeting">
+                <div class="dropdown">
+                    <img src="{{ user.profile.get_avatar_url }}" alt="{{ user.username }}'s avatar" class="user-avatar dropdown-toggle">
+                    <div class="dropdown-menu">
+                        <div class="dropdown-item profile-toggle">
+                            Profile
+                            <div class="profile-submenu">
+                                <a href="#" class="dropdown-item">Preferences</a>
+                                <form action="{% url 'logout' %}" method="post" class="logout-form">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item logout-button">Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             {% else %}
             <a href="{% url 'login' %}" class="btn btn-auth">Login</a>
             <a href="{% url 'signup' %}" class="btn btn-auth">Sign Up</a>
@@ -60,5 +72,55 @@
     </footer>
 </div>
 {# End .container #}
+<script>
+    // Toggle dropdown menu when avatar is clicked
+    document.addEventListener('DOMContentLoaded', function() {
+        const avatars = document.querySelectorAll('.dropdown-toggle');
+        const profileToggles = document.querySelectorAll('.profile-toggle');
+
+        avatars.forEach(avatar => {
+            avatar.addEventListener('click', function(e) {
+                const dropdownMenu = this.nextElementSibling;
+                dropdownMenu.classList.toggle('show');
+                e.stopPropagation();
+            });
+        });
+
+        profileToggles.forEach(toggle => {
+            toggle.addEventListener('click', function(e) {
+                const submenu = this.querySelector('.profile-submenu');
+                // For mobile support, toggle submenu on click
+                if (window.innerWidth <= 768) {
+                    submenu.style.display = submenu.style.display === 'block' ? 'none' : 'block';
+                    e.stopPropagation();
+                }
+            });
+        });
+
+        // Close dropdown when clicking outside
+        window.addEventListener('click', function(event) {
+            if (!event.target.matches('.dropdown-toggle') && 
+                !event.target.matches('.profile-toggle') && 
+                !event.target.closest('.profile-submenu')) {
+
+                // Close main dropdowns
+                const dropdowns = document.querySelectorAll('.dropdown-menu');
+                dropdowns.forEach(dropdown => {
+                    if (dropdown.classList.contains('show')) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+
+                // Close submenus on mobile
+                if (window.innerWidth <= 768) {
+                    const submenus = document.querySelectorAll('.profile-submenu');
+                    submenus.forEach(submenu => {
+                        submenu.style.display = 'none';
+                    });
+                }
+            }
+        });
+    });
+</script>
 </body>
 </html>
