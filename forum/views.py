@@ -19,10 +19,15 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import HttpResponseForbidden  # For permission errors
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone  # Import timezone
+from PIL import Image, UnidentifiedImageError
 
 # We'll need forms later:
-from .forms import NewPostForm, NewTopicForm
-from .models import Post, Topic
+from .decorators import profile_visibility_required
+from .forms import NewPostForm, NewTopicForm, ProfileForm
+from .models import Post, Profile, Topic
+
+IMAGE_HEIGHT_MAX = 500
+IMAGE_WIDTH_MAX = 500
 
 
 # View to display the list of all topics with sticky topics at the top
@@ -235,9 +240,34 @@ def delete_post(request, post_id):
     return render(request, "forum/delete_post_confirm.html", context)
 
 
+@profile_visibility_required
 def user_profile(request, username):
     # Get the User object for the requested username, or raise a 404 if not found
     profile_user = get_object_or_404(User, username=username)
+
+    # Get the profile and its visibility setting
+    profile = profile_user.profile
+    visibility = profile.profile_visibility
+
+    # Determine the level of profile information to display
+    # 0 = Basic info only (username, join date, post count)
+    # 1 = Standard info (basic + location, website, bio, signature, social links)
+    # 2 = Full info (standard + birth date, notification preferences)
+    info_level = 0
+
+    # Profile owner and admins can see everything
+    if (
+        request.user == profile_user
+        or request.user.is_staff
+        or request.user.is_superuser
+    ):
+        info_level = 2
+    # Members can see standard info for "members" and "public" profiles
+    elif (
+        request.user.is_authenticated and (visibility in {"members", "public"})
+    ) or visibility == "public":
+        info_level = 1
+    # Otherwise, only basic info is shown (handled by default info_level = 0)
 
     # Get topics created by this user, ordered by most recent
     user_topics = Topic.objects.filter(created_by=profile_user).order_by("-created_at")
@@ -250,5 +280,102 @@ def user_profile(request, username):
         "profile_user": profile_user,
         "user_topics": user_topics,
         "user_posts": user_posts,
+        "visibility": visibility,  # Pass visibility to the template
+        "info_level": info_level,  # Pass info level to the template
+        "is_owner": request.user == profile_user,  # Is the viewer the profile owner?
+        "is_admin": request.user.is_staff
+        or request.user.is_superuser,  # Is the viewer an admin?
     }
     return render(request, "forum/user_profile.html", context)
+
+
+@login_required
+def edit_profile(request, username=None):
+    """View for editing user profile information including avatar upload."""
+    # If username is provided, get that user's profile, otherwise use the current user's profile
+    if username and username != request.user.username:
+        # Check if the current user is an admin
+        if not request.user.is_staff and not request.user.is_superuser:
+            messages.error(request, "You don't have permission to edit this profile.")
+            return redirect("forum:forum_index")
+
+        # Get the user whose profile we're editing
+        user = get_object_or_404(User, username=username)
+        profile, created = Profile.objects.get_or_create(user=user)
+    else:
+        # Get the current user's profile or create one if it doesn't exist
+        profile, created = Profile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            # Save the form without committing to process the avatar
+            profile = form.save(commit=False)
+
+            # Handle avatar resizing if needed
+            if "avatar" in request.FILES:
+                avatar_file = request.FILES["avatar"]
+                # Resize large images
+                try:
+                    img = Image.open(avatar_file)
+                    if img.height > IMAGE_HEIGHT_MAX or img.width > IMAGE_WIDTH_MAX:
+                        # Calculate new dimensions while maintaining aspect ratio
+                        if img.height > img.width:
+                            ratio = 500.0 / img.height
+                            new_height = 500
+                            new_width = int(img.width * ratio)
+                        else:
+                            ratio = 500.0 / img.width
+                            new_width = 500
+                            new_height = int(img.height * ratio)
+
+                        # Resize the image
+                        img = img.resize(
+                            (new_width, new_height),
+                            Image.Resampling.LANCZOS,
+                        )
+
+                        # Save the resized image back to the avatar field
+                        # This requires saving to a temporary file
+                        import io
+
+                        from django.core.files.uploadedfile import InMemoryUploadedFile
+
+                        output = io.BytesIO()
+                        # Determine the format from the original file
+                        avatar_format = avatar_file.name.split(".")[-1].upper()
+                        if avatar_format == "JPG":
+                            avatar_format = "JPEG"
+
+                        # Save to the BytesIO object
+                        img.save(output, format=avatar_format, quality=85)
+                        output.seek(0)
+
+                        # Replace the avatar file with the resized version
+                        profile.avatar = InMemoryUploadedFile(
+                            output,
+                            "ImageField",
+                            avatar_file.name,
+                            f"image/{avatar_format.lower()}",
+                            output.getbuffer().nbytes,
+                            None,
+                        )
+                # except Exception as e:
+                except (
+                    UnidentifiedImageError,
+                    OSError,
+                    ValueError,
+                    AttributeError,
+                    IndexError,
+                    TypeError,
+                ) as e:
+                    messages.error(request, f"Error processing image: {e!s}")
+
+            # Save the profile
+            profile.save()
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect("forum:user_profile", username=request.user.username)
+    else:
+        form = ProfileForm(instance=profile)
+
+    return render(request, "forum/edit_profile.html", {"form": form})

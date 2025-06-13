@@ -3,17 +3,110 @@
 {% block title %}{{ profile_user.username }}'s Profile{% endblock %}
 
 {% block content %}
-<h2>{{ profile_user.username }}'s Profile</h2>
+<div class="profile-header">
+    <div class="profile-avatar">
+        <img src="{{ profile_user.profile.get_avatar_url }}" alt="{{ profile_user.username }}'s avatar" class="avatar-img">
+    </div>
+    <div class="profile-title">
+        <h2>{{ profile_user.username }}'s Profile</h2>
+        {% if profile_user.profile.user_title %}
+        <p class="user-title">{{ profile_user.profile.user_title }}</p>
+        {% endif %}
+    </div>
+</div>
 <hr>
 
 <div class="profile-info">
     <p><strong>Username:</strong> {{ profile_user.username }}</p>
     <p><strong>Date Joined:</strong> {{ profile_user.date_joined|date:"F d, Y" }}</p>
+
+    {% if info_level >= 1 and profile_user.profile.location %}
+    <p><strong>Location:</strong> {{ profile_user.profile.location }}</p>
+    {% endif %}
+
+    {% if info_level >= 1 and profile_user.profile.website %}
+    <p><strong>Website:</strong> <a href="{{ profile_user.profile.website }}" target="_blank">{{ profile_user.profile.website }}</a></p>
+    {% endif %}
+
+    {% if info_level >= 2 and profile_user.profile.birth_date %}
+    <p><strong>Birth Date:</strong> {{ profile_user.profile.birth_date|date:"F d, Y" }}</p>
+    {% endif %}
+
+    {% if info_level >= 1 and profile_user.profile.timezone %}
+    <p><strong>Timezone:</strong> {{ profile_user.profile.timezone }}</p>
+    {% endif %}
+
+    {% if info_level >= 1 and profile_user.profile.last_seen %}
+    <p><strong>Last Seen:</strong> {{ profile_user.profile.last_seen|date:"F d, Y P" }}</p>
+    {% endif %}
+
+    {% if info_level >= 1 and profile_user.profile.bio %}
+    <div class="bio">
+        <h4>About Me</h4>
+        <p>{{ profile_user.profile.bio|linebreaksbr }}</p>
+    </div>
+    {% endif %}
+
+    {% if info_level >= 1 and profile_user.profile.signature %}
+    <div class="signature">
+        <h4>Signature</h4>
+        <div>{{ profile_user.profile.get_sanitized_signature|safe }}</div>
+    </div>
+    {% endif %}
+
+    {% if info_level >= 1 %}
+    <div class="social-links">
+        {% if profile_user.profile.twitter %}
+        <p><strong>Twitter:</strong> <a href="https://twitter.com/{{ profile_user.profile.twitter }}" target="_blank">@{{ profile_user.profile.twitter }}</a></p>
+        {% endif %}
+
+        {% if profile_user.profile.github %}
+        <p><strong>GitHub:</strong> <a href="https://github.com/{{ profile_user.profile.github }}" target="_blank">{{ profile_user.profile.github }}</a></p>
+        {% endif %}
+
+        {% if profile_user.profile.linkedin %}
+        <p><strong>LinkedIn:</strong> <a href="{{ profile_user.profile.linkedin }}" target="_blank">Profile</a></p>
+        {% endif %}
+    </div>
+    {% endif %}
+
     <p><strong>Total Topics Started:</strong> {{ user_topics.count }}</p>
     <p><strong>Total Posts Made:</strong> {{ user_posts.count }}</p>
-    {# Add link to edit profile if viewing own profile - for a future step #}
-    {% if user == profile_user %}
-    {# <p><a href="{% url 'edit_profile' %}">Edit Profile</a></p> #}
+
+    {% if is_owner %}
+    <p><a href="{% url 'forum:edit_profile' %}" class="btn btn-primary">Edit Profile</a></p>
+    {% elif is_admin %}
+    <p><a href="{% url 'forum:edit_other_profile' profile_user.username %}" class="btn btn-warning">Edit Profile (Admin)</a></p>
+    {% endif %}
+
+    <!-- Display visibility information to the profile owner -->
+    {% if info_level >= 2 %}
+    <div class="profile-visibility-info" style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+        <p><strong>Profile Visibility:</strong> 
+            {% if visibility == 'public' %}
+                <span style="color: green;">Public</span> - Your profile is visible to everyone.
+            {% elif visibility == 'members' %}
+                <span style="color: blue;">Members Only</span> - Your profile is only visible to logged-in users.
+            {% elif visibility == 'hidden' %}
+                <span style="color: red;">Hidden</span> - Your profile is only visible to you.
+            {% endif %}
+        </p>
+        {% if is_owner %}
+        <p><small>You can change this setting in the Edit Profile page.</small></p>
+        {% endif %}
+    </div>
+
+    <!-- Display notification preferences to the profile owner -->
+    <div class="notification-preferences" style="margin-top: 10px; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+        <h4>Notification Preferences</h4>
+        <ul>
+            <li><strong>Notify on Reply:</strong> {% if profile_user.profile.notify_on_reply %}Yes{% else %}No{% endif %}</li>
+            <li><strong>Receive Newsletter:</strong> {% if profile_user.profile.receive_newsletter %}Yes{% else %}No{% endif %}</li>
+        </ul>
+        {% if is_owner %}
+        <p><small>You can change these settings in the Edit Profile page.</small></p>
+        {% endif %}
+    </div>
     {% endif %}
 </div>
 <hr>
@@ -25,7 +118,7 @@
         {% for topic in user_topics %}
         <li>
             <a href="{% url 'forum:topic_detail' topic.id %}">{{ topic.subject }}</a>
-            <small>on {{ topic.created_at|date:"M d, Y P" }}</small>
+            <small>&#8204; on {{ topic.created_at|date:"M d, Y P" }}</small>
         </li>
         {% endfor %}
     </ul>
@@ -43,7 +136,8 @@
                 <strong>{{ post.topic.subject }}</strong></a>
                 <small>on {{ post.created_at|date:"M d, Y P" }}</small>
             </p>
-            <p>{{ post.message|truncatewords_html:30|linebreaksbr }}</p>
+            {# Used wrong template filter truncatewords_html; Should be truncatewords #}
+            <p>{{ post.message|truncatewords:30|linebreaksbr }}</p>
         </li>
         {% endfor %}
         {% if user_posts.count > 15 %}

@@ -6,9 +6,18 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "django>=5.2.1",
+    "pytz>=2025.2",
+    "pillow>=10.0.0",
+    "pytest-django>=4.11.1",
+    "bleach>=6.0.0",
+    "python-dotenv>=1.1.0",
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
 ]
+
+[pytest]
+DJANGO_SETTINGS_MODULE = "forum_project.settings"
+python_files = "tests.py test_*.py *_tests.py"

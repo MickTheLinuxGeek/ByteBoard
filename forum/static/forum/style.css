@@ -19,38 +19,178 @@ body {
 header {
     background: #333;
     color: #fff;
-    padding-top: 30px;
+    padding: 15px 0;
     min-height: 70px;
     border-bottom: #0779e4 3px solid;
+    width: 100%;
+}
+
+.header-container {
+    width: 80%;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
 }
 
 header a {
     color: #fff;
     text-decoration: none;
     text-transform: uppercase;
-    font-size: 16px;
+    font-size: 20px;
 }
 
 header form {
-    background: #333;
-    color: #333;
+    display: inline-block;
+    margin: 0;
+    padding: 0;
+    background: transparent;
     border: 0;
-    padding: 7px 20px;
-    cursor: pointer;
-    border-radius: 5px;
 }
 
-header h1 a {
-    float: left;
+.header-logo {
+    display: flex;
+    align-items: center;
+}
+
+.site-logo {
+    height: 120px;
+    width: 120px;
+    margin-right: 10px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
 }
 
 header .auth-links {
-    float: right;
-    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-header .auth-links a {
-    margin-left: 15px;
+.user-greeting {
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #0779e4;
+    cursor: pointer;
+}
+
+/* Dropdown styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    background-color: #333;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    border-radius: 4px;
+    border: 1px solid #0779e4;
+    margin-top: 5px;
+}
+
+.dropdown-menu.show {
+    display: block;
+}
+
+.dropdown-item {
+    color: white;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    transition: background-color 0.3s;
+    position: relative;
+}
+
+.dropdown-item:hover {
+    background-color: #0779e4;
+}
+
+/* Profile submenu styles */
+.profile-toggle {
+    cursor: pointer;
+}
+
+.profile-submenu {
+    display: none;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    background-color: #333;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 2;
+    border-radius: 4px;
+    border: 1px solid #0779e4;
+}
+
+.profile-toggle:hover .profile-submenu {
+    display: block;
+}
+
+/* Logout form and button styles */
+.logout-form {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+}
+
+.logout-button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 12px 16px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.logout-button:hover {
+    background-color: #0779e4;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-auth {
+    background-color: #0779e4;
+    color: white;
+    border: none;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+.btn-auth:hover {
+    background-color: #0056b3;
 }
 
 header::after { /* Clearfix for floated elements */
@@ -131,6 +271,23 @@ form button[type="submit"]:hover {
     margin-bottom: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.topic-avatar {
+    margin-right: 15px;
+}
+
+.topic-avatar img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.topic-content {
+    flex: 1;
 }
 
 .topic-list li a {
@@ -219,6 +376,80 @@ form button[type="submit"]:hover {
     margin-right: 8px;
     font-size: 1.1em;
     color: #ffc107; /* Color for the pin emoji or icon if not an image */
+}
+
+/* Profile styling */
+.profile-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.profile-avatar {
+    margin-right: 20px;
+}
+
+.avatar-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #0779e4;
+}
+
+.profile-title {
+    flex: 1;
+}
+
+.user-title {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
+.profile-info {
+    background: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.bio {
+    margin: 15px 0;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 5px;
+}
+
+.social-links {
+    margin: 15px 0;
+}
+
+.social-links a {
+    color: #0779e4;
+    text-decoration: none;
+}
+
+.social-links a:hover {
+    text-decoration: underline;
+}
+
+/* Post avatars */
+.post-avatar {
+    float: left;
+    margin-right: 15px;
+}
+
+.post-avatar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.post-content {
+    overflow: hidden;
 }
 
 footer {

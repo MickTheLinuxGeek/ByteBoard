@@ -12,6 +12,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 import os
 from pathlib import Path
+from warnings import filterwarnings
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-0-qkf=+=$g+6y$vxqp**!xrb29$bmg+&=_dt_2lux%hqmx+45r"  # noqa: S105
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -47,6 +52,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "forum.middleware.LastSeenMiddleware",  # Add our custom middleware for tracking user activity
 ]
 
 ROOT_URLCONF = "forum_project.urls"
@@ -114,6 +120,11 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+# Media files (User uploads)
+MEDIA_URL = "/media/"
+MEDIA_ROOT = Path(BASE_DIR / "media")
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -124,3 +135,9 @@ LOGIN_REDIRECT_URL = "/forum/"  # Redirect to the forum index
 
 # URL to redirect to after logout
 LOGOUT_REDIRECT_URL = "/forum/"  # Redirect to the forum index
+
+filterwarnings(
+    "ignore",
+    "The FORMS_URLFIELD_ASSUME_HTTPS transitional setting is deprecated.",
+)
+FORMS_URLFIELD_ASSUME_HTTPS = True

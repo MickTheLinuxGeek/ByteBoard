@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<h2>Edit Your Profile</h2>
+<hr>
+
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags }}{% endif %}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="form-section">
+        <h3>Personal Information</h3>
+        
+        <div class="form-group">
+            <label for="{{ form.avatar.id_for_label }}">Avatar</label>
+            {{ form.avatar }}
+            {% if form.avatar.errors %}
+            <div class="error-message">{{ form.avatar.errors }}</div>
+            {% endif %}
+            <small class="form-text text-muted">{{ form.avatar.help_text }}</small>
+            
+            {% if form.instance.avatar %}
+            <div class="current-avatar">
+                <p>Current avatar:</p>
+                <img src="{{ form.instance.avatar.url }}" alt="Current avatar" style="max-width: 100px; max-height: 100px;">
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.bio.id_for_label }}">Biography</label>
+            {{ form.bio }}
+            {% if form.bio.errors %}
+            <div class="error-message">{{ form.bio.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.location.id_for_label }}">Location</label>
+            {{ form.location }}
+            {% if form.location.errors %}
+            <div class="error-message">{{ form.location.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.birth_date.id_for_label }}">Birth Date</label>
+            {{ form.birth_date }}
+            {% if form.birth_date.errors %}
+            <div class="error-message">{{ form.birth_date.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.website.id_for_label }}">Website</label>
+            {{ form.website }}
+            {% if form.website.errors %}
+            <div class="error-message">{{ form.website.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-section">
+        <h3>Forum Settings</h3>
+        
+        <div class="form-group">
+            <label for="{{ form.signature.id_for_label }}">Forum Signature</label>
+            {{ form.signature }}
+            {% if form.signature.errors %}
+            <div class="error-message">{{ form.signature.errors }}</div>
+            {% endif %}
+            <small class="form-text text-muted">{{ form.signature.help_text }}</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.user_title.id_for_label }}">User Title</label>
+            {{ form.user_title }}
+            {% if form.user_title.errors %}
+            <div class="error-message">{{ form.user_title.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-section">
+        <h3>Social Media</h3>
+        
+        <div class="form-group">
+            <label for="{{ form.twitter.id_for_label }}">Twitter</label>
+            {{ form.twitter }}
+            {% if form.twitter.errors %}
+            <div class="error-message">{{ form.twitter.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.github.id_for_label }}">GitHub</label>
+            {{ form.github }}
+            {% if form.github.errors %}
+            <div class="error-message">{{ form.github.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.linkedin.id_for_label }}">LinkedIn</label>
+            {{ form.linkedin }}
+            {% if form.linkedin.errors %}
+            <div class="error-message">{{ form.linkedin.errors }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="form-section">
+        <h3>Preferences</h3>
+        
+        <div class="form-group">
+            <label for="{{ form.timezone.id_for_label }}">Timezone</label>
+            {{ form.timezone }}
+            {% if form.timezone.errors %}
+            <div class="error-message">{{ form.timezone.errors }}</div>
+            {% endif %}
+            <small class="form-text text-muted">{{ form.timezone.help_text }}</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.profile_visibility.id_for_label }}">Profile Visibility</label>
+            {{ form.profile_visibility }}
+            {% if form.profile_visibility.errors %}
+            <div class="error-message">{{ form.profile_visibility.errors }}</div>
+            {% endif %}
+            <small class="form-text text-muted">{{ form.profile_visibility.help_text }}</small>
+        </div>
+        
+        <div class="form-check">
+            {{ form.notify_on_reply }}
+            <label class="form-check-label" for="{{ form.notify_on_reply.id_for_label }}">
+                {{ form.notify_on_reply.label }}
+            </label>
+        </div>
+        
+        <div class="form-check">
+            {{ form.receive_newsletter }}
+            <label class="form-check-label" for="{{ form.receive_newsletter.id_for_label }}">
+                {{ form.receive_newsletter.label }}
+            </label>
+        </div>
+    </div>
+    
+    <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <a href="{% url 'forum:user_profile' username=user.username %}" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+<style>
+    .form-section {
+        margin-bottom: 30px;
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 5px;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-check {
+        margin-bottom: 10px;
+    }
+    
+    .error-message {
+        color: red;
+        font-size: 0.9em;
+        margin-top: 5px;
+    }
+    
+    .form-actions {
+        margin-top: 20px;
+    }
+    
+    .current-avatar {
+        margin-top: 10px;
+    }
+</style>
+{% endblock %}

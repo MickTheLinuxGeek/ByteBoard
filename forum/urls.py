@@ -26,6 +26,12 @@ urlpatterns = [
     # Add this line for deleting posts
     path("post/<int:post_id>/delete/", views.delete_post, name="delete_post"),
 
+    # Add this line for editing user profile
+    path("profile/edit/", views.edit_profile, name="edit_profile"),
+
+    # Add this line for admins to edit other users' profiles
+    path("profile/<str:username>/edit/", views.edit_profile, name="edit_other_profile"),
+
     # Add this line for user profiles
     path("profile/<str:username>/", views.user_profile, name="user_profile"),
 ]

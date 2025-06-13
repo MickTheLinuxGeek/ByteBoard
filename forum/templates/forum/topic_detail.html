@@ -12,16 +12,35 @@
 <hr>
 
 {% for post in posts %}
-<div class="post" id="post-" {{ post.id }}>
-    <p>
-        <strong><a href="{% url 'forum:user_profile' post.created_by.username %}">
-            {{ post.created_by.username }}</a>
-        </strong> wrote on {{ post.created_at|date:"M d, Y P" }}
-        {% if post.updated_at %}
-        (edited on {{ post.updated_at|date:"M d, Y P" }})
+<div class="post" id="post-{{ post.id }}">
+    <div class="post-avatar">
+        <a href="{% url 'forum:user_profile' post.created_by.username %}">
+            <img src="{{ post.created_by.profile.get_avatar_url }}" alt="{{ post.created_by.username }}'s avatar">
+        </a>
+    </div>
+    <div class="post-content">
+        <p>
+            <strong><a href="{% url 'forum:user_profile' post.created_by.username %}">
+                {{ post.created_by.username }}</a>
+            </strong> 
+            {% if post.created_by.profile.user_title %}
+            <span class="user-title">{{ post.created_by.profile.user_title }}</span>
+            {% endif %}
+            <br>
+            <small>Posted on {{ post.created_at|date:"M d, Y P" }}
+            {% if post.updated_at %}
+            (edited on {{ post.updated_at|date:"M d, Y P" }})
+            {% endif %}</small>
+        </p>
+        <div class="post-message">
+            {{ post.message|linebreaksbr }}
+        </div>
+        {% if post.created_by.profile.signature %}
+        <div class="post-signature">
+            <hr style="margin: 10px 0; border-top: 1px dotted #ccc;">
+            <small>{{ post.created_by.profile.get_sanitized_signature|safe }}</small>
+        </div>
         {% endif %}
-    </p>
-    <p>{{ post.message|linebreaksbr }}</p>
 
     {# Add Edit link if the user is the author #}
     {% if user == post.created_by %}
@@ -31,6 +50,7 @@
         | <a href="{% url 'forum:delete_post' post.id %}" class="delete-link" style="color: #dc3545;">Delete Post</a>
     </p>
     {% endif %}
+    </div>
 </div>
 {% if not forloop.last %}
 <hr>{% endif %}

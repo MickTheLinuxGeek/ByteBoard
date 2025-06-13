@@ -17,3 +17,11 @@ db.sqlite3
 
 # Misc
 gemini.txt
+design_docs
+/design_docs/advanced_profile_requirements.md
+/design_docs/profile_plan.md
+/design_docs/profile_plan_tasks.md
+/.junie/
+/media/avatars/
+/ByteBoard_ITS.md
+.env
