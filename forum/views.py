@@ -93,6 +93,7 @@ def new_topic(request):
         if form.is_valid():  # Check if the form data is valid
             # Get the cleaned data from the form
             subject = form.cleaned_data["subject"]
+            category = form.cleaned_data["category"]
             message = form.cleaned_data["message"]
             user = request.user  # Get the currently logged-in user
 
@@ -100,6 +101,7 @@ def new_topic(request):
             topic = Topic.objects.create(
                 subject=subject,
                 created_by=user,
+                category=category,
             )
 
             # Create the initial Post instance for this topic

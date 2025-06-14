@@ -1,12 +1,14 @@
 # forum/forms.py
 
 import pathlib
-from typing import ClassVar
+from typing import ClassVar, cast
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db.models import QuerySet
 from PIL import Image
 
+from categories.models import Category
 from .models import Profile
 
 
@@ -19,6 +21,12 @@ class NewTopicForm(forms.Form):
         widget=forms.TextInput(
             attrs={"placeholder": "Enter the topic subject"},
         ),  # Customize input appearance
+    )
+    category = forms.ModelChoiceField(
+        queryset=cast(QuerySet, Category.objects.all()),
+        required=True,
+        label="Category",
+        empty_label="Select a category",
     )
     message = forms.CharField(
         required=True,
