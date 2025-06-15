@@ -26,6 +26,11 @@
                 <a href="{% url 'forum:topic_detail' topic.id %}">
                     {{ topic.subject }}
                 </a>
+                {% if topic.category %}
+                <span class="topic-category">
+                    in <a href="{% url 'categories:topics_by_category' topic.category.slug %}">{{ topic.category.name }}</a>
+                </span>
+                {% endif %}
                 <small>
                     by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
                     {{ topic.created_by.username }}
@@ -61,6 +66,11 @@
                 <a href="{% url 'forum:topic_detail' topic.id %}">
                     {{ topic.subject }}
                 </a>
+                {% if topic.category %}
+                <span class="topic-category">
+                    in <a href="{% url 'categories:topics_by_category' topic.category.slug %}">{{ topic.category.name }}</a>
+                </span>
+                {% endif %}
                 <small>
                     by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
                     {{ topic.created_by.username }}</a>

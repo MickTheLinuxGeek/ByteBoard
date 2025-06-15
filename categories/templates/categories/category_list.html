@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}All Categories - ByteBoard Forums{% endblock %}
+
+{% block content %}
+<div class="categories-container">
+    <h1>All Categories</h1>
+    
+    {% if categories %}
+        {% for category in categories %}
+            <div class="category-item">
+                <h3>
+                    <a href="{% url 'categories:topics_by_category' category_slug=category.slug %}">{{ category.name }}</a>
+                    ({{ category.topic_count }} Topic{{ category.topic_count|pluralize }})
+                </h3>
+                <p>{{ category.description|default:"No description available." }}</p>
+            </div>
+        {% endfor %}
+        
+        <!-- Pagination -->
+        {% if categories.has_other_pages %}
+            <div class="pagination">
+                <span class="step-links">
+                    {% if categories.has_previous %}
+                        <a href="?page=1">&laquo; first</a>
+                        <a href="?page={{ categories.previous_page_number }}">previous</a>
+                    {% endif %}
+                    
+                    <span class="current">
+                        Page {{ categories.number }} of {{ categories.paginator.num_pages }}
+                    </span>
+                    
+                    {% if categories.has_next %}
+                        <a href="?page={{ categories.next_page_number }}">next</a>
+                        <a href="?page={{ categories.paginator.num_pages }}">last &raquo;</a>
+                    {% endif %}
+                </span>
+            </div>
+        {% endif %}
+    {% else %}
+        <p>No categories available.</p>
+    {% endif %}
+</div>
+{% endblock %}
