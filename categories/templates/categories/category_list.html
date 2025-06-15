@@ -5,40 +5,124 @@
 {% block content %}
 <div class="categories-container">
     <h1>All Categories</h1>
-    
+
     {% if categories %}
-        {% for category in categories %}
-            <div class="category-item">
-                <h3>
-                    <a href="{% url 'categories:topics_by_category' category_slug=category.slug %}">{{ category.name }}</a>
-                    ({{ category.topic_count }} Topic{{ category.topic_count|pluralize }})
-                </h3>
-                <p>{{ category.description|default:"No description available." }}</p>
-            </div>
-        {% endfor %}
-        
+        <div class="category-list">
+            {% for category in categories %}
+                <div class="category-item">
+                    <h3>
+                        <a href="{% url 'categories:topics_by_category' category_slug=category.slug %}">{{ category.name }}</a>
+                        <span class="topic-count">({{ category.topic_count }} Topic{{ category.topic_count|pluralize }})</span>
+                    </h3>
+                    <p class="category-description">{{ category.description|default:"No description available." }}</p>
+                </div>
+            {% endfor %}
+        </div>
+
         <!-- Pagination -->
         {% if categories.has_other_pages %}
             <div class="pagination">
                 <span class="step-links">
                     {% if categories.has_previous %}
-                        <a href="?page=1">&laquo; first</a>
-                        <a href="?page={{ categories.previous_page_number }}">previous</a>
+                        <a href="?page=1" title="First Page">&laquo; first</a>
+                        <a href="?page={{ categories.previous_page_number }}" title="Previous Page">previous</a>
+                    {% else %}
+                        <span class="disabled">&laquo; first</span>
+                        <span class="disabled">previous</span>
                     {% endif %}
-                    
+
                     <span class="current">
                         Page {{ categories.number }} of {{ categories.paginator.num_pages }}
                     </span>
-                    
+
                     {% if categories.has_next %}
-                        <a href="?page={{ categories.next_page_number }}">next</a>
-                        <a href="?page={{ categories.paginator.num_pages }}">last &raquo;</a>
+                        <a href="?page={{ categories.next_page_number }}" title="Next Page">next</a>
+                        <a href="?page={{ categories.paginator.num_pages }}" title="Last Page">last &raquo;</a>
+                    {% else %}
+                        <span class="disabled">next</span>
+                        <span class="disabled">last &raquo;</span>
                     {% endif %}
                 </span>
             </div>
         {% endif %}
     {% else %}
-        <p>No categories available.</p>
+        <p class="no-items-message">No categories available.</p>
     {% endif %}
 </div>
+
+<style>
+    /* Responsive styles for categories list */
+    .categories-container {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+
+    .category-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .category-item {
+        background: #fff;
+        padding: 15px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        transition: transform 0.2s;
+    }
+
+    .category-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .category-item h3 {
+        margin-top: 0;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .topic-count {
+        font-size: 0.8em;
+        color: #666;
+        margin-left: 10px;
+    }
+
+    .category-description {
+        margin-bottom: 0;
+        color: #555;
+    }
+
+    .no-items-message {
+        background: #f8f9fa;
+        padding: 20px;
+        text-align: center;
+        border-radius: 5px;
+        color: #6c757d;
+    }
+
+    /* Media queries for responsive design */
+    @media (max-width: 768px) {
+        .category-item h3 {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .topic-count {
+            margin-left: 0;
+            margin-top: 5px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .pagination .step-links a,
+        .pagination .current,
+        .pagination .disabled {
+            padding: 6px 10px;
+            margin: 0 2px;
+        }
+    }
+</style>
 {% endblock %}
