@@ -64,7 +64,7 @@ def category_list(request):
     This view is accessible to all users.
     """
     # Get all categories and annotate with topic count
-    categories = (Category.objects.annotate(topic_count=Count("topics")).order_by( "-name" ))
+    categories = (Category.objects.annotate(topic_count=Count("topics")).order_by("name"))
 
     # Set up pagination
     paginator = Paginator(categories, 10)  # Show 10 categories per page
