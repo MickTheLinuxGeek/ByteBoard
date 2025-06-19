@@ -69,7 +69,7 @@
                             {{ topic.subject }}
                         </a>
                     </div>
-                    <div class="topic-meta">
+                    <div class="topic-category">
                         by <a href="{% url 'forum:user_profile' topic.created_by.username %}">
                         {{ topic.created_by.username }}</a>
                         {% if topic.created_by.profile.user_title %}
