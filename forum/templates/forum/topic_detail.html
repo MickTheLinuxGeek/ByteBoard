@@ -6,6 +6,11 @@
 <p><a href="{% url 'forum:forum_index' %}">&laquo; Back to Topics</a></p>
 
 <h2>{{ topic.subject }}</h2>
+{% if topic.category %}
+<p class="topic-category">
+    Category: <a href="{% url 'categories:topics_by_category' topic.category.slug %}">{{ topic.category.name }}</a>
+</p>
+{% endif %}
 <p>
     <a href="{% url 'forum:new_post' topic.id %}">Post a Reply</a>
 </p>

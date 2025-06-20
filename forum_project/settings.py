@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "forum",  # The forum app
+    "categories",  # The categories app
 ]
 
 MIDDLEWARE = [

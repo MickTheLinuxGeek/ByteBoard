@@ -36,6 +36,8 @@ urlpatterns = [
     # Add this line to include Django's built-in authentication URLs
     # under the '/accounts/' path (e.g., /accounts/login/, /accounts/logout/)
     path("accounts/", include("django.contrib.auth.urls")),
+    # Add this line to include the categories app URLs
+    path("categories/", include("categories.urls")),
 ]
 
 # Serve media files during development

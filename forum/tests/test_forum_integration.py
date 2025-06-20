@@ -146,6 +146,12 @@ class TestForumIntegration(TestCase):
         # Check that the topic was created successfully
         assert response.status_code == HTTP_SUCCESS  # noqa: S101
 
+        # Fix for failing test;  Have to get the topic detail of the topic created above so the response contains the
+        # signature.
+        response = self.client.get(reverse("forum:topic_detail", kwargs={"topic_id": self.topic.id}), follow=True)
+
+        assert response.status_code == HTTP_SUCCESS
+
         # Check that the signature is included in the response
         self.assertContains(response, "Test signature")
 

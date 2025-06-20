@@ -7,6 +7,8 @@ import pytz  # Import pytz for timezone handling
 from django.contrib.auth.models import User  # Import Django's built-in User model
 from django.db import models
 
+from categories.models import Category
+
 
 # Profile model for extended user information
 class Profile(models.Model):
@@ -117,6 +119,13 @@ class Topic(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     is_sticky = models.BooleanField(default=False)  # Add this line for sticky topics
+    category = models.ForeignKey(
+        Category,
+        related_name="topics",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=False,
+    )
 
     # We might add a 'last_updated' field later if needed
 
