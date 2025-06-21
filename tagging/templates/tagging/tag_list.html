@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}All Tags{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'forum:forum_index' %}">&laquo; Back to Topics</a></p>
+
+<h2>All Tags</h2>
+<hr>
+
+<div class="tag-list">
+    {% for tag in tags %}
+    <div class="tag-item">
+        <a href="{% url 'tagging:posts_by_tag' tag.slug %}" class="tag-link">
+            <span class="tag-name">{{ tag.name }}</span>
+            <span class="tag-count">({{ tag.post_count }} post{{ tag.post_count|pluralize }})</span>
+        </a>
+    </div>
+    {% empty %}
+    <p>There are no tags yet.</p>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if tags.has_other_pages %}
+<div class="pagination">
+    {% if tags.has_previous %}
+        <a href="?page={{ tags.previous_page_number }}">&laquo; Previous</a>
+    {% else %}
+        <span class="disabled">&laquo; Previous</span>
+    {% endif %}
+    
+    {% for i in tags.paginator.page_range %}
+        {% if tags.number == i %}
+            <span class="current">{{ i }}</span>
+        {% else %}
+            <a href="?page={{ i }}">{{ i }}</a>
+        {% endif %}
+    {% endfor %}
+    
+    {% if tags.has_next %}
+        <a href="?page={{ tags.next_page_number }}">Next &raquo;</a>
+    {% else %}
+        <span class="disabled">Next &raquo;</span>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
