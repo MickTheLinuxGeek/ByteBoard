@@ -16,3 +16,8 @@
 </form>
 
 {% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'forum/js/tag-autocomplete.js' %}"></script>
+{% endblock %}

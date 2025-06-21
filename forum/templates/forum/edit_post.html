@@ -16,3 +16,8 @@
     <a href="{% url 'forum:topic_detail' post.topic.id %}">Cancel and return to topic</a>
 </p>
 {% endblock %}
+
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'forum/js/tag-autocomplete.js' %}"></script>
+{% endblock %}
