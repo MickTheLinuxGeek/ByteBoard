@@ -8,6 +8,10 @@
 <h2>All Tags</h2>
 <hr>
 
+<h3>Tag Cloud</h3>
+{% include "tagging/tag_cloud_widget.html" with tags=cloud_tags %}
+
+<h3>Tag List</h3>
 <div class="tag-list">
     {% for tag in tags %}
     <div class="tag-item">
@@ -29,7 +33,7 @@
     {% else %}
         <span class="disabled">&laquo; Previous</span>
     {% endif %}
-    
+
     {% for i in tags.paginator.page_range %}
         {% if tags.number == i %}
             <span class="current">{{ i }}</span>
@@ -37,7 +41,7 @@
             <a href="?page={{ i }}">{{ i }}</a>
         {% endif %}
     {% endfor %}
-    
+
     {% if tags.has_next %}
         <a href="?page={{ tags.next_page_number }}">Next &raquo;</a>
     {% else %}

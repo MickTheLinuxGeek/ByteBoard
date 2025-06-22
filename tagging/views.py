@@ -67,6 +67,7 @@ def tag_list(request):
 
     Includes tag name and post count.
     Implements pagination if there are many tags.
+    Also includes a tag cloud where font size is proportional to post count.
     """
     # Get all tags and annotate them with post count
     tags = Tag.objects.annotate(post_count=Count('posts')).order_by('-post_count', 'name')
@@ -84,6 +85,30 @@ def tag_list(request):
         # If page is out of range, deliver last page of results
         tags_page = paginator.page(paginator.num_pages)
 
+    # Prepare tags for the tag cloud
+    # Get the top 30 tags by post count for the cloud
+    cloud_tags = list(tags[:30])
+
+    # Calculate font sizes for the tag cloud
+    if cloud_tags:
+        # Find the minimum and maximum post counts
+        min_count = min(tag.post_count for tag in cloud_tags)
+        max_count = max(tag.post_count for tag in cloud_tags)
+
+        # Calculate font size for each tag (between 0.8em and 2.5em)
+        min_font_size = 0.8
+        max_font_size = 2.5
+
+        for tag in cloud_tags:
+            if max_count == min_count:  # Avoid division by zero
+                tag.font_size = (min_font_size + max_font_size) / 2
+            else:
+                # Calculate font size based on post count
+                tag.font_size = min_font_size + (
+                    (tag.post_count - min_count) / (max_count - min_count)
+                ) * (max_font_size - min_font_size)
+
     return render(request, "tagging/tag_list.html", {
         "tags": tags_page,
+        "cloud_tags": cloud_tags,
     })

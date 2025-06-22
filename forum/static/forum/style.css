@@ -491,6 +491,60 @@ form button[type="submit"]:hover {
     margin-left: 5px;
 }
 
+/* Post Tags Styling */
+.post-tags {
+    margin-top: 10px;
+}
+
+.post-tags .tag-list {
+    margin: 5px 0;
+    gap: 5px;
+}
+
+.post-tags .tag-item {
+    background: #f0f8ff;
+    border: 1px solid #b8d8ff;
+    border-radius: 3px;
+    padding: 2px;
+    font-size: 0.9em;
+}
+
+.post-tags .tag-link {
+    padding: 2px 6px;
+}
+
+.post-tags .tag-name {
+    color: #0779e4;
+}
+
+/* Tag Cloud Styling */
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.tag-cloud-item {
+    display: inline-block;
+    padding: 5px 10px;
+    text-decoration: none;
+    color: #0779e4;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+}
+
+.tag-cloud-item:hover {
+    background-color: #0779e4;
+    color: white;
+    transform: scale(1.05);
+}
+
 footer {
     text-align: center;
     padding: 20px;
