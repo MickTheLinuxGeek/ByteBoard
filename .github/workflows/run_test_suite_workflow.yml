@@ -1,0 +1,66 @@
+# This is a GitHub Actions workflow file that defines a set of automated jobs.
+# It's written in YAML format.
+#
+# Name: The name of the workflow as it will appear in the "Actions" tab of your GitHub repository.
+name: Run Django Project Test Suite on Feature Branches
+
+# on: This section defines the trigger for the workflow.
+# We want this workflow to run on every 'push' event.
+on:
+  push:
+    # branches-ignore: This filter prevents the workflow from running on pushes to the specified branches.
+    # We are ignoring the 'main' branch because we typically have different actions for it,
+    # like deploying to production. This ensures our tests run on feature branches.
+    branches-ignore:
+      - 'main'
+      - 'master'
+
+# jobs: A workflow run is made up of one or more jobs, which run in parallel by default.
+jobs:
+  # test: This is the unique identifier for our job.
+  test:
+    # name: The name of the job as it will appear on GitHub's UI.
+    name: Run Django Project Test Suite
+    # runs-on: This specifies the type of virtual machine to run the job on.
+    # 'ubuntu-latest' is a general-purpose and cost-effective choice.
+    runs-on: ubuntu-latest
+
+    # steps: A job contains a sequence of tasks called steps.
+    # Steps can run commands, run setup tasks, or run an action in your repository,
+    # a public repository, or an action published in a Docker registry.
+    steps:
+      # Step 1: Check out the repository's code
+      # The 'uses' keyword tells the job to retrieve a pre-built action.
+      # 'actions/checkout@v4' is the official action for checking out your repository's code
+      # so the workflow can access it.
+      - name: Check out repository code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up the Python environment
+      # 'actions/setup-python@v5' is the official action for setting up a Python environment.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          # python-version: Specify the version of Python to use.
+          # You should change '3.9' to match the version used in your project.
+          python-version: '3.13'
+
+      # Step 3: Install project dependencies
+      # This step uses 'run' to execute command-line commands.
+      - name: Install dependencies
+        run: |
+          # Upgrade pip to the latest version to ensure compatibility and security.
+          python -m pip install --upgrade pip
+          # Install the packages listed in your requirements.txt file.
+          # Your project must contain a requirements.txt file at the root for this to work.
+          pip install -r requirements_dev.txt
+
+      # Step 4: Run the pytest tests
+      # This step executes the pytest command. Pytest will automatically discover
+      # and run any tests in your repository that follow its naming conventions
+      # (e.g., files named test_*.py or *_test.py).
+      - name: Run Project Test Suite
+        run: |
+          python manage.py test forum.tests
+          python manage.py test categories.tests
+

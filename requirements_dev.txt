@@ -1,0 +1,16 @@
+asgiref==3.8.1
+beautifulsoup4==4.13.4
+bleach==6.2.0
+django==5.2.1
+iniconfig==2.1.0
+packaging==25.0
+pillow==11.2.1
+pluggy==1.6.0
+pytest==8.3.5
+pytest-django==4.11.1
+python-dotenv==1.1.0
+pytz==2025.2
+soupsieve==2.7
+sqlparse==0.5.3
+typing-extensions==4.14.0
+webencodings==0.5.1
