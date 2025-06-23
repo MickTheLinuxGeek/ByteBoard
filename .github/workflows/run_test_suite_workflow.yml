@@ -15,7 +15,7 @@ on:
     #   - 'master'
     branches:
       - 'tagging-feature'
-  pull-request:
+  pull_request:
     branches:
       - 'master'
 
