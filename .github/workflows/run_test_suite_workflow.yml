@@ -14,6 +14,8 @@ on:
     branches-ignore:
       - 'main'
       - 'master'
+    branches:
+      - 'tagging-feature'
 
 # jobs: A workflow run is made up of one or more jobs, which run in parallel by default.
 jobs:
