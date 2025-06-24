@@ -28,6 +28,8 @@ jobs:
     # runs-on: This specifies the type of virtual machine to run the job on.
     # 'ubuntu-latest' is a general-purpose and cost-effective choice.
     runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
 
     # steps: A job contains a sequence of tasks called steps.
     # Steps can run commands, run setup tasks, or run an action in your repository,
