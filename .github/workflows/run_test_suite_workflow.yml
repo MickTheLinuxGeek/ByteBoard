@@ -69,3 +69,4 @@ jobs:
         run: |
           python manage.py test forum.tests
           python manage.py test categories.tests
+          python manage.py test tagging.tests
