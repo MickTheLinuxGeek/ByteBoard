@@ -1,0 +1,11 @@
+{% if tags %}
+<div class="tag-cloud">
+    {% for tag in tags %}
+    <a href="{% url 'tagging:posts_by_tag' tag.slug %}" 
+       class="tag-cloud-item" 
+       style="font-size: {{ tag.font_size }}em;">
+        {{ tag.name }}
+    </a>
+    {% endfor %}
+</div>
+{% endif %}

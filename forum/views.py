@@ -21,6 +21,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone  # Import timezone
 from PIL import Image, UnidentifiedImageError
 
+from tagging.models import Tag
+
 # We'll need forms later:
 from .decorators import profile_visibility_required
 from .forms import NewPostForm, NewTopicForm, ProfileForm
@@ -105,11 +107,24 @@ def new_topic(request):
             )
 
             # Create the initial Post instance for this topic
-            Post.objects.create(
+            post = Post.objects.create(
                 message=message,
                 topic=topic,
                 created_by=user,
             )
+
+            # Process tags if provided
+            tags_input = form.cleaned_data.get("tags", "")
+            if tags_input:
+                # Split the comma-separated tags and strip whitespace
+                tag_names = [tag.strip().lower() for tag in tags_input.split(",") if tag.strip()]
+
+                # Process each tag
+                for tag_name in tag_names:
+                    # Get or create the tag
+                    tag, created = Tag.objects.get_or_create(name=tag_name)
+                    # Add the tag to the post
+                    post.tags.add(tag)
 
             # Redirect to the newly created topic's detail page
             return redirect("forum:topic_detail", topic_id=topic.pk)
@@ -135,11 +150,24 @@ def new_post(request, topic_id):
             user = request.user
 
             # Create the Post instance, linking it to the topic and user
-            Post.objects.create(
+            post = Post.objects.create(
                 message=message,
                 topic=topic,
                 created_by=user,
             )
+
+            # Process tags if provided
+            tags_input = form.cleaned_data.get("tags", "")
+            if tags_input:
+                # Split the comma-separated tags and strip whitespace
+                tag_names = [tag.strip().lower() for tag in tags_input.split(",") if tag.strip()]
+
+                # Process each tag
+                for tag_name in tag_names:
+                    # Get or create the tag
+                    tag, created = Tag.objects.get_or_create(name=tag_name)
+                    # Add the tag to the post
+                    post.tags.add(tag)
             # Optionally, update the topic's last_updated field here if you add one
 
             # Redirect back to the topic detail page
@@ -202,11 +230,30 @@ def edit_post(request, post_id):
             post.message = form.cleaned_data["message"]
             post.updated_at = timezone.now()  # Set the updated_at timestamp
             post.save()
+
+            # Process tags if provided
+            tags_input = form.cleaned_data.get("tags", "")
+
+            # Clear existing tags
+            post.tags.clear()
+
+            if tags_input:
+                # Split the comma-separated tags and strip whitespace
+                tag_names = [tag.strip().lower() for tag in tags_input.split(",") if tag.strip()]
+
+                # Process each tag
+                for tag_name in tag_names:
+                    # Get or create the tag
+                    tag, created = Tag.objects.get_or_create(name=tag_name)
+                    # Add the tag to the post
+                    post.tags.add(tag)
             # Redirect to the topic detail page where the post is located
             return redirect("forum:topic_detail", topic_id=post.topic.id)
     else:
-        # GET request: Populate the form with the existing post's message
-        form = NewPostForm(initial={"message": post.message})
+        # GET request: Populate the form with the existing post's message and tags
+        # Get existing tags as a comma-separated string
+        existing_tags = ", ".join([tag.name for tag in post.tags.all()])
+        form = NewPostForm(initial={"message": post.message, "tags": existing_tags})
 
     context = {
         "form": form,

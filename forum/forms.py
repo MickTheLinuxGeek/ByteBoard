@@ -9,8 +9,17 @@ from django.db.models import QuerySet
 from PIL import Image
 
 from categories.models import Category
+from tagging.models import Tag
 from .models import Profile
 
+
+# Custom widget for tag input
+class TagInputWidget(forms.TextInput):
+    def __init__(self, attrs=None):
+        default_attrs = {'class': 'tag-input', 'placeholder': 'Enter tags separated by commas'}
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(default_attrs)
 
 # Form for creating a new Topic AND its first Post
 class NewTopicForm(forms.Form):
@@ -35,6 +44,12 @@ class NewTopicForm(forms.Form):
             attrs={"rows": 5, "placeholder": "Write the first post for this topic"},
         ),  # Use a textarea for longer messages
     )
+    tags = forms.CharField(
+        required=False,
+        label="Tags",
+        help_text="Enter tags separated by commas (e.g., python, django, web-development)",
+        widget=TagInputWidget(),
+    )
 
 
 # Form for creating a new Post (reply)
@@ -45,6 +60,12 @@ class NewPostForm(forms.Form):
         widget=forms.Textarea(
             attrs={"rows": 5, "placeholder": "Write your reply"},
         ),
+    )
+    tags = forms.CharField(
+        required=False,
+        label="Tags",
+        help_text="Enter tags separated by commas (e.g., python, django, web-development)",
+        widget=TagInputWidget(),
     )
 
 

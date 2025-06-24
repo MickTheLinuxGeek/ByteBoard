@@ -1,19 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ topic.subject }}{% endblock %}
+{% block title %}Posts tagged with "{{ tag.name }}"{% endblock %}
 
 {% block content %}
 <p><a href="{% url 'forum:forum_index' %}">&laquo; Back to Topics</a></p>
 
-<h2>{{ topic.subject }}</h2>
-{% if topic.category %}
-<p class="topic-category">
-    Category: <a href="{% url 'categories:topics_by_category' topic.category.slug %}">{{ topic.category.name }}</a>
-</p>
-{% endif %}
-<p>
-    <a href="{% url 'forum:new_post' topic.id %}">Post a Reply</a>
-</p>
+<h2>Posts tagged with "{{ tag.name }}"</h2>
 <hr>
 
 {% for post in posts %}
@@ -40,39 +32,45 @@
         <div class="post-message">
             {{ post.message|linebreaksbr }}
         </div>
-        {% if post.tags.all %}
-        <div class="post-tags">
-            <div class="tag-list">
-                {% for tag in post.tags.all %}
-                <div class="tag-item">
-                    <a href="{% url 'tagging:posts_by_tag' tag.slug %}" class="tag-link">
-                        <span class="tag-name">{{ tag.name }}</span>
-                    </a>
-                </div>
-                {% endfor %}
-            </div>
+        <div class="post-topic-link">
+            <small>In topic: <a href="{% url 'forum:topic_detail' post.topic.id %}">{{ post.topic.subject }}</a></small>
         </div>
-        {% endif %}
         {% if post.created_by.profile.signature %}
         <div class="post-signature">
             <hr style="margin: 10px 0; border-top: 1px dotted #ccc;">
             <small>{{ post.created_by.profile.get_sanitized_signature|safe }}</small>
         </div>
         {% endif %}
-
-    {# Add Edit link if the user is the author #}
-    {% if user == post.created_by %}
-    <p>
-        <a href="{% url 'forum:edit_post' post.id %}" class="edit-link">Edit Post</a>
-        {# Add Delete link here, next to Edit #}
-        | <a href="{% url 'forum:delete_post' post.id %}" class="delete-link" style="color: #dc3545;">Delete Post</a>
-    </p>
-    {% endif %}
     </div>
 </div>
 {% if not forloop.last %}
 <hr>{% endif %}
 {% empty %}
-<p>There are no posts in this topic yet.</p>
+<p>There are no posts with this tag yet.</p>
 {% endfor %}
+
+<!-- Pagination -->
+{% if posts.has_other_pages %}
+<div class="pagination">
+    {% if posts.has_previous %}
+        <a href="?page={{ posts.previous_page_number }}">&laquo; Previous</a>
+    {% else %}
+        <span class="disabled">&laquo; Previous</span>
+    {% endif %}
+    
+    {% for i in posts.paginator.page_range %}
+        {% if posts.number == i %}
+            <span class="current">{{ i }}</span>
+        {% else %}
+            <a href="?page={{ i }}">{{ i }}</a>
+        {% endif %}
+    {% endfor %}
+    
+    {% if posts.has_next %}
+        <a href="?page={{ posts.next_page_number }}">Next &raquo;</a>
+    {% else %}
+        <span class="disabled">Next &raquo;</span>
+    {% endif %}
+</div>
+{% endif %}
 {% endblock %}

@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "forum",  # The forum app
     "categories",  # The categories app
+    "tagging",  # The tagging app
 ]
 
 MIDDLEWARE = [

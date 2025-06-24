@@ -8,6 +8,7 @@ from django.contrib.auth.models import User  # Import Django's built-in User mod
 from django.db import models
 
 from categories.models import Category
+from tagging.models import Tag
 
 
 # Profile model for extended user information
@@ -148,6 +149,7 @@ class Post(models.Model):
         null=True,
         blank=True,
     )  # Field to store last update time
+    tags = models.ManyToManyField(Tag, related_name="posts", blank=True)
 
     # We could add 'updated_at' and 'updated_by' if we implement editing
 

@@ -38,6 +38,8 @@ urlpatterns = [
     path("accounts/", include("django.contrib.auth.urls")),
     # Add this line to include the categories app URLs
     path("categories/", include("categories.urls")),
+    # Add this line to include the tagging app URLs
+    path("tags/", include("tagging.urls")),
 ]
 
 # Serve media files during development
